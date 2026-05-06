@@ -1,0 +1,350 @@
+/* ---------- GLOBAL LAYOUT ---------- */
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+  background-color: #f9cdd2;
+  font-family: Arial, sans-serif;
+}
+
+body {
+  background-image: url("assets/images/wordlie6.jpg");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: black;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  min-height: 100vh;
+}
+
+/* ---------- SPLASH SCREEN ---------- */
+
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f9cdd2;
+  background-image: url("assets/images/wordlie6.jpg");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 1000;
+  transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+}
+
+#splash-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
+}
+
+#splash-content h1 {
+  font-size: 2.3em;
+  color: black;
+  margin: 0;
+  text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.5);
+}
+
+#splash-content p {
+  color: black;
+  font-size: 1.1em;
+  margin-top: 10px;
+}
+
+/* ---------- MAIN TITLE ---------- */
+h1 {
+  text-align: center;
+  margin: 14px 0 6px;
+  font-size: 2em;
+}
+
+/* ---------- GAME GRID ---------- */
+#board {
+  width: 270px;
+  margin: 0 auto 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+}
+
+.tile {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #333;
+  margin: 2px;
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  transition: background-color 0.3s;
+  border-radius: 6px;
+}
+
+/* ---------- KEYBOARD ---------- */
+#keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 4px auto;
+  width: 100%;
+  max-width: 500px;
+  flex-shrink: 0;
+}
+
+.key-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: nowrap;
+  gap: 0.5px;
+  margin: 0.5px 0;
+}
+
+.key {
+  background: black;
+  color: white;
+  border: none;
+  width: 33px;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.88em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s;
+}
+
+.key:active {
+  background: #888;
+}
+
+.key[style*="gold"] {
+  background-color: #b59f3b !important;
+}
+
+/* ---------- STATS + CONTROLS ---------- */
+#stats {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 18px;
+  color: black;
+  flex-shrink: 0;
+}
+
+button {
+  background-color: #333;
+  color: white;
+  font-size: 1em;
+  margin: 5px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+#controls,
+#extras {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+#message {
+  text-align: center;
+  font-size: 1.4em;
+  margin: 6px 0 4px;
+  min-height: 1.6em;
+}
+
+/* ---------- CELEBRATION ---------- */
+.star {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: gold;
+  clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  opacity: 0;
+  animation: fadeStars 2.5s ease-in-out forwards;
+}
+
+@keyframes fadeStars {
+  0% {opacity: 0; transform: scale(0.5) translateY(50px);}
+  50% {opacity: 1; transform: scale(1) translateY(-50px);}
+  100% {opacity: 0; transform: scale(0.5) translateY(-120px);}
+}
+
+/* ---------- RESPONSIVE & OVERFLOW FIXES ---------- */
+@media (max-height: 650px), (max-width: 480px) {
+  body {
+    justify-content: flex-start;
+    padding-bottom: 10px;
+  }
+
+  h1 {
+    font-size: 1.6em;
+    margin-bottom: 8px;
+  }
+
+  #board {
+    transform: scale(0.9);
+    margin-bottom: 4px;
+  }
+
+  .tile {
+    width: 36px;
+    height: 36px;
+    font-size: 1.2em;
+  }
+
+  .key {
+    width: 30px;
+    height: 38px;
+    font-size: 0.85em;
+  }
+
+  #keyboard {
+    max-width: 430px;
+  }
+
+  #stats {
+    font-size: 0.9em;
+  }
+
+  button {
+    padding: 8px 10px;
+     }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  #board {
+    transform: scale(1);
+    margin-bottom: 5px;
+  }
+  .tile { width: 42px; height: 42px; font-size: 1.4em; }
+  #keyboard { max-width: 480px; }
+  .key { width: 33px; height: 42px; }
+  h1 { font-size: 1.8em; }
+}
+
+@media (min-width: 769px) {
+  #board {
+    transform: scale(1.05);
+    margin-bottom: 8px;
+  }
+  h1 { font-size: 2.1em; }
+  .tile { width: 44px; height: 44px; font-size: 1.4em; }
+  .key { width: 34px; height: 42px; font-size: 0.9em; }
+}
+/* ---------- HOW TO PLAY MODAL ---------- */
+#help-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  transition: opacity 0.3s ease;
+}
+
+#help-modal.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.help-content {
+  background-color: #fff9fc;
+  color: #222;
+  max-width: 90%;
+  width: 340px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 20px 25px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  position: relative;
+  font-size: 0.95em;
+}
+
+#close-help {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+.help-content h2 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.help-content ul {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+.help-content li {
+  margin: 4px 0;
+}
+
+.legend {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 6px;
+  border-radius: 3px;
+  vertical-align: middle;
+}
+
+.legend.green { background-color: green; }
+.legend.gold  { background-color: gold; }
+.legend.gray  { background-color: #666; }
+
+.note {
+  text-align: center;
+  margin-top: 12px;
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+@media (max-width: 480px) {
+  .help-content {
+    width: 88%;
+    padding: 16px 18px;
+    font-size: 0.9em;
+  }
+}
+

@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Wordlie6</title>
+
+		<!-- PWA setup -->
+		<link rel="manifest" href="manifest.json">
+			<meta name="theme-color" content="#f9cdd2">
+				<link rel="icon" href="assets/images/icon-192.png" type="image/png">
+
+					<!-- Main styles -->
+					<link rel="stylesheet" href="wordlie6.css">
+</head>
+	<body>
+
+		<!-- Splash Screen -->
+		<div id="splash-screen">
+			<div id="splash-content">
+				<h1>Wordlie6</h1>
+				<p>Loading game...</p>
+			</div>
+		</div>
+
+		<!-- Game Title -->
+		<h1>Wordlie6</h1>
+
+		<!-- Game Grid -->
+		<div id="board"></div>
+
+		<!-- Keyboard -->
+		<div id="keyboard"></div>
+
+		<!-- Stats line -->
+		<div id="stats"></div>
+
+		<!-- Controls -->
+		<div id="controls">
+			<button id="enter">ENTER</button>
+			<button id="delete">DELETE</button>
+		</div>
+
+		<!-- Extra options -->
+		<div id="extras">
+			<button id="new-game">NEW GAME</button>
+			<button id="show-hint">SHOW HINT</button>
+			<button id="reveal">REVEAL WORD</button>
+			<button id="instructions">HOW TO PLAY</button>
+		</div>
+
+		<!-- Message line -->
+		<div id="message"></div>
+
+		<!-- Celebration Sound -->
+		<audio id="cheer-sound" src="assets/sounds/cheers.mp3" preload="auto"></audio>
+
+		<!-- How to Play Modal -->
+		<div id="help-modal" class="hidden">
+			<div class="help-content">
+				<span id="close-help">&times;</span>
+				<h2>How to Play Wordlie6</h2>
+				<p>
+					Guess the <strong>6‑letter word</strong> in six tries.
+				</p>
+				<ul>
+					<li>Each guess must be a valid English word.</li>
+					<li>
+						<span class="legend green"></span> Green: correct letter, correct spot.
+					</li>
+					<li>
+						<span class="legend gold"></span> Gold: correct letter, wrong spot.
+					</li>
+					<li>
+						<span class="legend gray"></span> Gray: letter not in the word.
+					</li>
+					<li>Use the on-screen or physical keyboard to enter letters.</li>
+					<li>Press ENTER to submit, DELETE to erase.</li>
+					<li>“Show Hint” gives one random letter.</li>
+				</ul>
+				<p class="note">Solve as many words as you can and keep your streak going!</p>
+			</div>
+		</div>
+
+		<!-- Scripts -->
+		<script src="dictionary.js"></script>
+		<script src="wordlie6.js"></script>
+
+		<!-- Register service worker + splash finish -->
+		<script>
+			if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('service-worker.js');
+			}
+
+			window.addEventListener("load", () => {
+			const splash = document.getElementById("splash-screen");
+			setTimeout(() => splash.classList.add("hidden"), 1200);
+			});
+		</script>
+
+		<!-- How‑to‑Play Modal Logic -->
+		<script>
+			const helpModal = document.getElementById("help-modal");
+			const instructionsBtn = document.getElementById("instructions");
+			const closeHelpBtn = document.getElementById("close-help");
+
+			instructionsBtn.addEventListener("click", () => {
+			helpModal.classList.remove("hidden");
+			});
+			closeHelpBtn.addEventListener("click", () => {
+			helpModal.classList.add("hidden");
+			});
+			// Close by clicking outside
+			window.addEventListener("click", (e) => {
+			if (e.target === helpModal) helpModal.classList.add("hidden");
+			});
+		</script>
+		<p style="text-align:center; font-size:12px; color:black;">
+			© 2026 Allan Kirk – Licensed copy
+		</p>
+
+	</body>
+</html>
