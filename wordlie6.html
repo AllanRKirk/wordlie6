@@ -115,6 +115,14 @@
 			if (e.target === helpModal) helpModal.classList.add("hidden");
 			});
 		</script>
+		<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js")
+      .then(() => console.log("Service Worker registered"))
+      .catch(err => console.log("Service Worker registration failed", err));
+  }
+</script>
+
 		<p style="text-align:center; font-size:12px; color:black;">
 			© 2026 Allan Kirk – Licensed copy
 		</p>
