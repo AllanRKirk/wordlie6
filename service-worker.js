@@ -3,7 +3,7 @@ self.addEventListener("install", event => {
     caches.open("wordlie6-cache").then(cache => {
       return cache.addAll([
         "./",
-        "wordlie6.html",
+        "index.html",
         "wordlie6.css",
         "wordlie6.js",
         "dictionary.js",
