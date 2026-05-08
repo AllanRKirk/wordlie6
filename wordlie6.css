@@ -10,7 +10,7 @@ html, body {
 }
 
 body {
-  background-image: url("assets/images/wordlie6-bg.jpg");
+  background: url("assets/images/wordlie6-bg.jpg") center/cover no-repeat fixed;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
