@@ -129,7 +129,8 @@ window.addEventListener("click", (e) => {
     helpModal.classList.add("hidden");
   }
 });
-// -------------------- Process guess --------------------
+
+// -------------------- Process guess (UPDATED WITH DUPLICATE‑LETTER FIX) --------------------
 function handleGuess() {
     if (currentCol < cols) return;
 
@@ -140,13 +141,42 @@ function handleGuess() {
         return;
     }
 
+    // Build frequency map of correct word
+    const letterCounts = {};
+    for (let ch of correctWord) {
+        letterCounts[ch] = (letterCounts[ch] || 0) + 1;
+    }
+
+    const result = Array(cols).fill("absent");
+
+    // First pass: mark greens
+    for (let i = 0; i < cols; i++) {
+        if (guess[i] === correctWord[i]) {
+            result[i] = "correct";
+            letterCounts[guess[i]]--;
+        }
+    }
+
+    // Second pass: mark yellows only if available
+    for (let i = 0; i < cols; i++) {
+        if (result[i] === "correct") continue;
+
+        const letter = guess[i];
+
+        if (letterCounts[letter] > 0) {
+            result[i] = "present";
+            letterCounts[letter]--;
+        }
+    }
+
+    // Apply colours to tiles + keyboard
     for (let i = 0; i < cols; i++) {
         const tile = grid[currentRow][i];
         const letter = guess[i];
-        let color = "#666";
 
-        if (letter === correctWord[i]) color = "green";
-        else if (correctWord.includes(letter)) color = "gold";
+        let color = "#666"; // grey
+        if (result[i] === "correct") color = "green";
+        else if (result[i] === "present") color = "gold";
 
         tile.style.backgroundColor = color;
         colorKey(letter, color);
@@ -227,16 +257,13 @@ function showHint() {
 // -------------------- Reveal word --------------------
 function revealWord() {
     message.textContent = `The word is ${correctWord}`;
-// Disable everything except NEW GAME
-  document.querySelectorAll("button").forEach(btn => {
-    if (btn.id !== "new-game") btn.disabled = true;
-
-});
+    document.querySelectorAll("button").forEach(btn => {
+        if (btn.id !== "new-game") btn.disabled = true;
+    });
 }
 
 // -------------------- Reset game --------------------
 function resetGame() {
-  // Reactivate all buttons
   document.querySelectorAll("button").forEach(btn => {
     btn.disabled = false;
   });
@@ -277,3 +304,6 @@ function showCelebration() {
         resetGame();
     }, 5000);
 }
+// After building board + keyboard
+document.getElementById("splash-screen").style.display = "none";
+
