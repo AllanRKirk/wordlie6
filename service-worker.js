@@ -1,4 +1,4 @@
-cconst CACHE_NAME = "wordlie6-cache-v3";
+const CACHE_NAME = "wordlie6-cache-v3";
 self.skipWaiting();
 clients.claim();
 
