@@ -217,12 +217,9 @@ button:hover {
   #board {
     transform: scale(0.9);
     margin-bottom: 4px;
-    #board {
     margin-top: 10px;   /* raises the grid slightly */
     margin-bottom: 20px; /* creates space above the message bar */
 }
-
-  }
 
   .tile {
     width: 36px;
