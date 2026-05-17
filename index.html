@@ -99,22 +99,7 @@
 		</script>
 
 		<!-- How‑to‑Play Modal Logic -->
-		<script>
-			const helpModal = document.getElementById("help-modal");
-			const instructionsBtn = document.getElementById("instructions");
-			const closeHelpBtn = document.getElementById("close-help");
-
-			instructionsBtn.addEventListener("click", () => {
-			helpModal.classList.remove("hidden");
-			});
-			closeHelpBtn.addEventListener("click", () => {
-			helpModal.classList.add("hidden");
-			});
-			// Close by clicking outside
-			window.addEventListener("click", (e) => {
-			if (e.target === helpModal) helpModal.classList.add("hidden");
-			});
-		</script>
+		
 		<script>
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("service-worker.js")
