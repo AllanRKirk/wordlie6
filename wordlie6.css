@@ -120,8 +120,8 @@ h1 {
   display: flex;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 0.3px;      /* reduced from 0.5px */
-  margin: 0.3px 0; /* reduced from 0.5px */
+  gap: 0px;      /* reduced from 0.5px */
+  margin: 0px 0; /* reduced from 0.5px */
 }
 
 /* ⭐ Reduced key width slightly */
@@ -129,7 +129,7 @@ h1 {
   background: black;
   color: white;
   border: none;
-  width: 31px;     /* reduced from 33px */
+  width: 29px;     /* reduced from 33px */
   height: 40px;
   border-radius: 4px;
   cursor: pointer;
@@ -360,7 +360,7 @@ button:hover {
 /* ---------- FIXED LICENSE FOOTER ---------- */
 #license {
   position: fixed;
-  bottom: 4px;
+  bottom: 16px;
   left: 0;
   width: 100%;
   text-align: center;
