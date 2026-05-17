@@ -176,7 +176,7 @@ button:hover {
 #extras {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   margin-top: 2px;
   flex-shrink: 0;
@@ -247,8 +247,7 @@ button:hover {
   button {
     padding: 8px 10px;
   }
-}
-
+  
 @media (min-width: 481px) and (max-width: 768px) {
   #board {
     transform: scale(1);
