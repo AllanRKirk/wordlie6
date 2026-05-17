@@ -356,11 +356,11 @@ button:hover {
 
 #license {
   position: fixed;
-  bottom: 5px;
+  bottom: 6px;
   left: 0;
   width: 100%;
   text-align: center;
-  font-size: 12px;
+  font-size: 10px;
   color: black;
   opacity: 0.8;
   pointer-events: none;
