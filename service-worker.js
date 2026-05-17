@@ -48,9 +48,8 @@ self.addEventListener("install", event => {
 });
 
 self.addEventListener("activate", event => {
-  event.waitUntil(
-  clients.claim(); // NEW: take control of all pages immediately
-);
+  event.waitUntil(clients.claim());
+  self.skipWaiting();
 });
 
 self.addEventListener("fetch", event => {
