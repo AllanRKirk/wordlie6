@@ -206,15 +206,12 @@ button:hover {
   100% {opacity: 0; transform: scale(0.5) translateY(-120px);}
 }
 
-/* ---------- RESPONSIVE & OVERFLOW FIXES ---------- */
 @media (max-height: 650px), (max-width: 480px) {
   body {
     justify-content: flex-start;
     padding-bottom: 10px;
-  }
-}
-
-  h1 {
+  }  
+ h1 {
     font-size: 1.6em;
     margin-bottom: 8px;
   }
@@ -255,20 +252,11 @@ button:hover {
     transform: scale(1);
     margin-bottom: 5px;
   }
-  .tile { width: 42px; height: 42px; font-size: 1.4em; }
+  
+  tile { width: 42px; height: 42px; font-size: 1.4em; }
   #keyboard { max-width: 480px; }
   .key { width: 31px; height: 42px; }
   h1 { font-size: 1.8em; }
-}
-
-@media (min-width: 769px) {
-  #board {
-    transform: scale(1.05);
-    margin-bottom: 8px;
-  }
-  h1 { font-size: 2.1em; }
-  .tile { width: 44px; height: 44px; font-size: 1.4em; }
-  .key { width: 33px; height: 42px; font-size: 0.9em; }
 }
 
 /* ---------- HOW TO PLAY MODAL ---------- */
