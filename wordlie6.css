@@ -247,7 +247,7 @@ button:hover {
     margin-bottom: 5px;
   }
   
-  tile { width: 42px; height: 42px; font-size: 1.4em; }
+  .tile { width: 42px; height: 42px; font-size: 1.4em; }
   #keyboard { max-width: 480px; }
   .key { width: 31px; height: 42px; }
   h1 { font-size: 1.8em; }
