@@ -176,7 +176,7 @@ button:hover {
 #extras {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   margin-top: 2px;
   flex-shrink: 0;
@@ -215,33 +215,27 @@ button:hover {
     font-size: 1.6em;
     margin-bottom: 8px;
   }
-
   #board {
     transform: scale(0.9);
     margin-bottom: 4px;
     margin-top: 10px;
   }
-
   .tile {
     width: 36px;
     height: 36px;
     font-size: 1.2em;
   }
-
   .key {
     width: 28px; /* tighter */
     height: 38px;
     font-size: 0.85em;
   }
-
   #keyboard {
     max-width: 430px;
   }
-
   #stats {
     font-size: 0.9em;
   }
-
   button {
     padding: 8px 10px;
   }
