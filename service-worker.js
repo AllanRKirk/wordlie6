@@ -1,6 +1,4 @@
 const CACHE_NAME = "wordlie6-cache-v3";
-self.skipWaiting();
-clients.claim();
 
 const FILES_TO_CACHE = [
   "./",
@@ -40,18 +38,20 @@ const FILES_TO_CACHE = [
   "assets/images/microsoft/microsoft-5.png"
 ];
 
+// INSTALL
 self.addEventListener("install", event => {
-  self.skipWaiting(); // NEW: activate immediately
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(FILES_TO_CACHE))
   );
-});
-
-self.addEventListener("activate", event => {
-  event.waitUntil(clients.claim());
   self.skipWaiting();
 });
 
+// ACTIVATE
+self.addEventListener("activate", event => {
+  event.waitUntil(clients.claim());
+});
+
+// FETCH
 self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request).then(response => {
@@ -59,3 +59,4 @@ self.addEventListener("fetch", event => {
     })
   );
 });
+
