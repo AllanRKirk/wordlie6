@@ -110,7 +110,7 @@ h1 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  margin: 3px auto;
+  margin: 2px auto;
   width: 100%;
   max-width: 500px;
   flex-shrink: 0;
