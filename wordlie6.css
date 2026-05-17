@@ -67,10 +67,9 @@ h1 {
   text-align: center;
   margin: 14px 0 6px;
   font-size: 2em;
-  margin-bottom: 10px; /* increases gap between title and grid */
+  margin-bottom: 10px;
 }
 
-/* ---------- GAME GRID ---------- */
 /* ---------- GAME GRID ---------- */
 #board {
   margin-top: 10px;
@@ -116,19 +115,21 @@ h1 {
   flex-shrink: 0;
 }
 
+/* ⭐ Reduced spacing between rows */
 .key-row {
   display: flex;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 0.5px;
-  margin: 0.5px 0;
+  gap: 0.3px;      /* reduced from 0.5px */
+  margin: 0.3px 0; /* reduced from 0.5px */
 }
 
+/* ⭐ Reduced key width slightly */
 .key {
   background: black;
   color: white;
   border: none;
-  width: 33px;
+  width: 31px;     /* reduced from 33px */
   height: 40px;
   border-radius: 4px;
   cursor: pointer;
@@ -220,9 +221,8 @@ button:hover {
   #board {
     transform: scale(0.9);
     margin-bottom: 4px;
-    margin-top: 10px;   /* raises the grid slightly */
-    margin-bottom: 20px; /* creates space above the message bar */
-}
+    margin-top: 10px;
+  }
 
   .tile {
     width: 36px;
@@ -231,7 +231,7 @@ button:hover {
   }
 
   .key {
-    width: 30px;
+    width: 29px; /* reduced */
     height: 38px;
     font-size: 0.85em;
   }
@@ -246,7 +246,7 @@ button:hover {
 
   button {
     padding: 8px 10px;
-     }
+  }
 }
 
 @media (min-width: 481px) and (max-width: 768px) {
@@ -256,7 +256,7 @@ button:hover {
   }
   .tile { width: 42px; height: 42px; font-size: 1.4em; }
   #keyboard { max-width: 480px; }
-  .key { width: 33px; height: 42px; }
+  .key { width: 32px; height: 42px; }
   h1 { font-size: 1.8em; }
 }
 
@@ -267,8 +267,9 @@ button:hover {
   }
   h1 { font-size: 2.1em; }
   .tile { width: 44px; height: 44px; font-size: 1.4em; }
-  .key { width: 34px; height: 42px; font-size: 0.9em; }
+  .key { width: 33px; height: 42px; font-size: 0.9em; }
 }
+
 /* ---------- HOW TO PLAY MODAL ---------- */
 #help-modal {
   position: fixed;
@@ -356,6 +357,7 @@ button:hover {
   }
 }
 
+/* ---------- FIXED LICENSE FOOTER ---------- */
 #license {
   position: fixed;
   bottom: 6px;
@@ -367,5 +369,3 @@ button:hover {
   opacity: 0.8;
   pointer-events: none;
 }
-
-
