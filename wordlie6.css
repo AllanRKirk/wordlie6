@@ -11,6 +11,7 @@ html, body {
 }
 
 body {
+  padding-bottom: 60px; /* ensures footer always has space */
   background: url("assets/images/wordlie6-bg.png") center/cover no-repeat fixed;
   background-size: cover;
   background-position: center;
@@ -204,6 +205,10 @@ button:hover {
   0% {opacity: 0; transform: scale(0.5) translateY(50px);}
   50% {opacity: 1; transform: scale(1) translateY(-50px);}
   100% {opacity: 0; transform: scale(0.5) translateY(-120px);}
+}
+
+#controls, #extras, #message {
+  margin-bottom: 40px; /* lifts everything above the footer */
 }
 
 @media (max-height: 650px), (max-width: 480px) {
