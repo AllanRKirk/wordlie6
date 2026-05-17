@@ -115,21 +115,21 @@ h1 {
   flex-shrink: 0;
 }
 
-/* ⭐ Reduced spacing between rows */
+/* ⭐ Tighter rows */
 .key-row {
   display: flex;
   justify-content: center;
   flex-wrap: nowrap;
-  gap: 0px;      /* reduced from 0.5px */
-  margin: 0px 0; /* reduced from 0.5px */
+  gap: 0px;
+  margin: 0px 0;
 }
 
-/* ⭐ Reduced key width slightly */
+/* ⭐ Tighter keys */
 .key {
   background: black;
   color: white;
   border: none;
-  width: 29px;     /* reduced from 33px */
+  width: 30px;     /* reduced from 31px */
   height: 40px;
   border-radius: 4px;
   cursor: pointer;
@@ -176,7 +176,7 @@ button:hover {
 #extras {
   display: flex;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   flex-wrap: wrap;
   margin-top: 2px;
   flex-shrink: 0;
@@ -186,7 +186,7 @@ button:hover {
   text-align: center;
   font-size: 1.2em;
   margin: 6px 0 4px;
-  min-height: 1.2em;
+  min-height: 1.6em;
 }
 
 /* ---------- CELEBRATION ---------- */
@@ -231,7 +231,7 @@ button:hover {
   }
 
   .key {
-    width: 29px; /* reduced */
+    width: 28px; /* tighter */
     height: 38px;
     font-size: 0.85em;
   }
@@ -247,7 +247,8 @@ button:hover {
   button {
     padding: 8px 10px;
   }
-  
+}
+
 @media (min-width: 481px) and (max-width: 768px) {
   #board {
     transform: scale(1);
@@ -255,7 +256,7 @@ button:hover {
   }
   .tile { width: 42px; height: 42px; font-size: 1.4em; }
   #keyboard { max-width: 480px; }
-  .key { width: 32px; height: 42px; }
+  .key { width: 31px; height: 42px; }
   h1 { font-size: 1.8em; }
 }
 
@@ -359,7 +360,7 @@ button:hover {
 /* ---------- FIXED LICENSE FOOTER ---------- */
 #license {
   position: fixed;
-  bottom: 0px;
+  bottom: 18px;   /* raised from 6px */
   left: 0;
   width: 100%;
   text-align: center;
