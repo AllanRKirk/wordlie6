@@ -207,10 +207,6 @@ button:hover {
   100% {opacity: 0; transform: scale(0.5) translateY(-120px);}
 }
 
-#controls, #extras, #message {
-  margin-bottom: 80px; /* lifts everything above the footer */
-}
-
 @media (max-height: 650px), (max-width: 480px) {
   body {
     justify-content: flex-start;
