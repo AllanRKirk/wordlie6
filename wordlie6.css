@@ -256,7 +256,6 @@ button:hover {
   #keyboard { max-width: 480px; }
   .key { width: 31px; height: 42px; }
   h1 { font-size: 1.8em; }
-}
 
 /* ---------- HOW TO PLAY MODAL ---------- */
 #help-modal {
