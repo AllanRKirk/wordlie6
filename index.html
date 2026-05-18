@@ -6,9 +6,15 @@
 		<title>Wordlie6</title>
 
 		<!-- PWA setup -->
-		<link rel="manifest" href="manifest.json?v=4">
+		
 			<meta name="theme-color" content="#f9cdd2">
 				<link rel="icon" href="assets/images/icon-192.png" type="image/png">
+		<link rel="manifest" href="manifest.json">
+<script>
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.register("service-worker.js");
+  }
+</script>
  
 					<!-- Main styles -->
 					<link rel="stylesheet" href="wordlie6.css">
