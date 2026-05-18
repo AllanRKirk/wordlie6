@@ -1,5 +1,5 @@
 /* wordlie6.js — full persistent‑stats version */
-
+/* allan */
 // -------------------- Element references --------------------
 const board = document.getElementById("board");
 const keyboard = document.getElementById("keyboard");
