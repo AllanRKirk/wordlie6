@@ -206,6 +206,16 @@ button:hover {
   50% {opacity: 1; transform: scale(1) translateY(-50px);}
   100% {opacity: 0; transform: scale(0.5) translateY(-120px);}
 }
+/* ---------- WINNING WORD FLASH ---------- */
+.flash-tile {
+  animation: flashOpacity 0.5s linear infinite;
+}
+
+@keyframes flashOpacity {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.2; }
+}
+
 
 @media (max-height: 650px), (max-width: 480px) {
   body {
