@@ -1,352 +1,206 @@
-/* wordlie6.js — updated with flashing win row + big congratulations overlay */
-/* allan */
-
-// -------------------- Element references --------------------
-const board = document.getElementById("board");
-const keyboard = document.getElementById("keyboard");
-const message = document.getElementById("message");
-const cheer = document.getElementById("cheer-sound");
-const statsBox = document.getElementById("stats");
-
-const deleteBtn = document.getElementById("delete");
-const enterBtn = document.getElementById("enter");
-const newGameBtn = document.getElementById("new-game");
-const showHintBtn = document.getElementById("show-hint");
-const revealBtn = document.getElementById("reveal");
-const helpModal = document.getElementById("help-modal");
-const instructionsBtn = document.getElementById("instructions");
-const closeHelpBtn = document.getElementById("close-help");
-
-// -------------------- Game state --------------------
-let correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-let currentRow = 0;
-let currentCol = 0;
-const rows = 6;
-const cols = 6;
-const grid = [];
-let hintUsed = false;
-let gameOver = false;
-
-// -------------------- Stats --------------------
-let timesCorrect = 0;
-let gamesPlayed = 0;
-let currentStreak = 0;
-let bestStreak = 0;
-
-// -------------------- Load stats --------------------
-function loadStats() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("wordlie6stats"));
-    if (saved) {
-      timesCorrect = saved.timesCorrect || 0;
-      gamesPlayed = saved.gamesPlayed || 0;
-      currentStreak = saved.currentStreak || 0;
-      bestStreak = saved.bestStreak || 0;
-    }
-  } catch (e) {}
-}
-
-// -------------------- Save stats --------------------
-function saveStats() {
-  const data = {
-    timesCorrect,
-    gamesPlayed,
-    currentStreak,
-    bestStreak
-  };
-  localStorage.setItem("wordlie6stats", JSON.stringify(data));
-}
-
-// -------------------- Update stats display --------------------
-function updateStats() {
-  const winPercent =
-    gamesPlayed > 0 ? Math.round((timesCorrect / gamesPlayed) * 100) : 0;
-
-  statsBox.textContent =
-    `Times Correct: ${timesCorrect} | ` +
-    `Games Played: ${gamesPlayed} | ` +
-    `Win %: ${winPercent}% | ` +
-    `Streak: ${currentStreak} | Best: ${bestStreak}`;
-}
-
-// Load stats on startup
-loadStats();
-updateStats();
-
-// -------------------- Build the board --------------------
-for (let r = 0; r < rows; r++) {
-  const row = document.createElement("div");
-  row.classList.add("row");
-  const rowTiles = [];
-  for (let c = 0; c < cols; c++) {
-    const tile = document.createElement("div");
-    tile.classList.add("tile");
-    row.appendChild(tile);
-    rowTiles.push(tile);
-  }
-  board.appendChild(row);
-  grid.push(rowTiles);
-}
-
-// -------------------- Build the keyboard --------------------
-const layout = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-layout.forEach(line => {
-  const rowDiv = document.createElement("div");
-  rowDiv.classList.add("key-row");
-  line.split("").forEach(ch => {
-    const key = document.createElement("button");
-    key.textContent = ch;
-    key.classList.add("key");
-    key.addEventListener("click", () => pressKey(ch));
-    rowDiv.appendChild(key);
-  });
-  keyboard.appendChild(rowDiv);
-});
-
-// Cache key buttons
-const keyButtons = Array.from(document.querySelectorAll(".key"));
-
-// -------------------- Keyboard input --------------------
-function pressKey(key) {
-  if (gameOver) return;
-  if (currentRow >= rows) return;
-  if (currentCol < cols) {
-    grid[currentRow][currentCol].textContent = key;
-    currentCol++;
-  }
-}
-
-deleteBtn.addEventListener("click", () => {
-  if (gameOver) return;
-  if (currentCol > 0) {
-    currentCol--;
-    grid[currentRow][currentCol].textContent = "";
-    message.textContent = "";
-  }
-});
-
-enterBtn.addEventListener("click", handleGuess);
-
-// -------------------- How to Play Modal --------------------
-instructionsBtn.addEventListener("click", () => {
-  helpModal.classList.remove("hidden");
-});
-
-closeHelpBtn.addEventListener("click", () => {
-  helpModal.classList.add("hidden");
-});
-
-window.addEventListener("click", (e) => {
-  if (e.target === helpModal) {
-    helpModal.classList.add("hidden");
-  }
-});
-
-// -------------------- Process guess --------------------
-function handleGuess() {
-  if (gameOver) return;
-  if (currentRow >= rows) return;
-  if (currentCol < cols) return;
-
-  const guess = grid[currentRow].map(t => t.textContent).join("");
-
-  if (!WORDS.includes(guess)) {
-    message.textContent = "Not in word list!";
-    return;
-  }
-
-  const letterCounts = {};
-  for (const ch of correctWord) {
-    letterCounts[ch] = (letterCounts[ch] || 0) + 1;
-  }
-
-  const result = Array(cols).fill("absent");
-
-  // Greens
-  for (let i = 0; i < cols; i++) {
-    if (guess[i] === correctWord[i]) {
-      result[i] = "correct";
-      letterCounts[guess[i]]--;
-    }
-  }
-
-  // Yellows
-  for (let i = 0; i < cols; i++) {
-    if (result[i] === "correct") continue;
-    const letter = guess[i];
-    if (letterCounts[letter] > 0) {
-      result[i] = "present";
-      letterCounts[letter]--;
-    }
-  }
-
-  // Apply colours
-  for (let i = 0; i < cols; i++) {
-    const tile = grid[currentRow][i];
-    const letter = guess[i];
-
-    let color = "#666";
-    if (result[i] === "correct") color = "green";
-    else if (result[i] === "present") color = "gold";
-
-    tile.style.backgroundColor = color;
-    colorKey(letter, color);
-  }
-
-  if (guess === correctWord) {
-    handleWin();
-    return;
-  }
-
-  currentRow++;
-  currentCol = 0;
-
-  if (currentRow >= rows) {
-    handleLoss();
-  }
-}
-
-// -------------------- Win / Loss handling --------------------
-function handleWin() {
-  timesCorrect++;
-  gamesPlayed++;
-  currentStreak++;
-  if (currentStreak > bestStreak) bestStreak = currentStreak;
-
-  saveStats();
-  updateStats();
-
-  gameOver = true;
-
-  flashWinningRow(currentRow);
-  showCelebration();
-  showCongratsOverlay();
-
-  message.textContent = "Select New Game to continue";
-
-  document.querySelectorAll("button").forEach(btn => {
-    if (btn.id !== "new-game") btn.disabled = true;
-  });
-}
-
-function handleLoss() {
-  gamesPlayed++;
-  currentStreak = 0;
-
-  message.textContent = `Game Over! Word was ${correctWord}`;
-  saveStats();
-  updateStats();
-
-  gameOver = true;
-
-  document.querySelectorAll("button").forEach(btn => {
-    if (btn.id !== "new-game") btn.disabled = true;
-  });
-}
-
-// -------------------- Flash winning row --------------------
-function flashWinningRow(rowIndex) {
-  const tiles = grid[rowIndex];
-  tiles.forEach(tile => tile.classList.add("flash-tile"));
-}
-
-// -------------------- Big congratulations overlay --------------------
-function showCongratsOverlay() {
-  const overlay = document.getElementById("congrats-overlay");
-  overlay.classList.remove("hidden");
-
-  setTimeout(() => {
-    overlay.classList.add("hidden");
-  }, 2500);
-}
-
-// -------------------- Keyboard colouring --------------------
-function colorKey(letter, color) {
-  keyButtons.forEach(key => {
-    if (key.textContent === letter) {
-      const current = key.style.backgroundColor;
-      if (
-        color === "green" ||
-        (color === "gold" && current !== "green") ||
-        (color === "#666" && current !== "green" && current !== "gold")
-      ) {
-        key.style.backgroundColor = color;
-      }
-    }
-  });
-}
-
-// -------------------- Buttons --------------------
-newGameBtn.addEventListener("click", resetGame);
-showHintBtn.addEventListener("click", showHint);
-revealBtn.addEventListener("click", revealWord);
-
-// -------------------- Hint logic --------------------
-function showHint() {
-  if (gameOver) return;
-  if (hintUsed) {
-    message.textContent = "Hint already used!";
-    return;
-  }
-
-  hintUsed = true;
-
-  const index = Math.floor(Math.random() * correctWord.length);
-  const letter = correctWord[index];
-  message.textContent = `Hint: Letter ${index + 1} is '${letter}'`;
-}
-
-// -------------------- Reveal word --------------------
-function revealWord() {
-  if (gameOver) return;
-  message.textContent = `The word is ${correctWord}`;
-  document.querySelectorAll("button").forEach(btn => {
-    if (btn.id !== "new-game") btn.disabled = true;
-  });
-  gameOver = true;
-}
-
-// -------------------- Reset game --------------------
-function resetGame() {
-  document.querySelectorAll("button").forEach(btn => {
-    btn.disabled = false;
-  });
-
-  board.querySelectorAll(".tile").forEach(tile => {
-    tile.textContent = "";
-    tile.style.backgroundColor = "black";
-    tile.classList.remove("flash-tile");
-  });
-
-  keyButtons.forEach(k => {
-    k.style.backgroundColor = "black";
-  });
-
-  message.textContent = "";
-  currentRow = 0;
-  currentCol = 0;
-  hintUsed = false;
-  gameOver = false;
-  correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-  updateStats();
-}
-
-// -------------------- Celebration animation --------------------
-function showCelebration() {
-  cheer.currentTime = 0;
-  cheer.play();
-
-  for (let i = 0; i < 50; i++) {
-    const star = document.createElement("div");
-    star.classList.add("star");
-    star.style.left = Math.random() * window.innerWidth + "px";
-    star.style.bottom = "0px";
-    star.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
-    star.style.animationDelay = Math.random() * 0.3 + "s";
-    document.body.appendChild(star);
-    star.addEventListener("animationend", () => star.remove());
-  }
-}
-
-// -------------------- Hide splash --------------------
-document.getElementById("splash-screen").style.display = "none";
+/* dictionary.js — modern 6‑letter common English words */
+const WORDS = [
+"ABACUS","ABASED","ABATED","ABIDER","ABJECT","ABLAZE","ABODED","ABRUPT",
+"ABSENT","ABSORB","ABSURD","ACCEDE","ACCENT","ACCEPT","ACCESS","ACCORD",
+"ACCUSE","ACIDIC","ACROSS","ACTION","ACTIVE","ACTUAL","ADDLED","ADHERE",
+"ADJOIN","ADJUST","ADMIRE","ADROIT","ADVENT","ADVERT","ADVICE","ADVISE",
+"AERATE","AERIAL","AFFECT","AFFIRM","AFFORD","AFLAME","AFLOAT","AFRESH",
+"AGENCY","AGHAST","AGLEAM","AGREED","ALIGHT","ALMOND","ALMOST","ALPINE",
+"ALWAYS","AMAZED","AMENDS","AMIDST","AMOUNT","AMUSED","ANCHOR","ANGLED",
+"ANGORA","ANIMAL","ANSWER","ANTLER","ANYONE","ANYWAY","APATHY","APPEAL",
+"APPEAR","APPROX","ARABLE","ARCING","ARDENT","ARGUED","ARIDLY","ARISEN",
+"AROUND","AROUSE","ARREST","ARRIVE","ARTERY","ARTFUL","ARTIST","ASCEND",
+"ASHORE","ASLEEP","ASPECT","ASSIGN","ASSIST","ASSUME","ASSURE","ASTERN",
+"ASTUTE","ATTACH","ATTACK","ATTEND","ATTIRE","AUBURN","AUTHOR","AUTUMN",
+"AVENGE","AVENUE","AVIDLY","AWAKEN","AWNING","BACKED","BACKUP","BADGER",
+"BAFFLE","BAILED","BAKERY","BAKING","BALCON","BALDED","BALLET","BALLOT",
+"BANANA","BANISH","BANNED","BANNER","BARBED","BARBER","BARELY","BARLEY","BARREL",
+"BARREN","BASALT","BASKET","BASTED","BATTER","BATTLE","BAUBLE","BEACON",
+"BEADED","BEAGLE","BEAKER","BEAMED","BEATEN","BEAUTY","BECAME","BECKON",
+"BECOME","BEDBUG","BEDDED","BEETLE","BEFELL","BEFORE","BEHALF","BEHAVE",
+"BEHIND","BEHOLD","BELIEF","BELONG","BELTED","BENIGN","BESIDE","BETTER",
+"BEYOND","BINARY","BINDER","BIRDIE","BITING","BITTER","BLAMED","BLEACH",
+"BLEARY","BLESSE","BLIGHT","BLITHE","BLOUSE","BLOWER","BLURRY","BOILED",
+"BOLDED","BOLDER","BOLTED","BOMBER","BONDED","BONNET","BOOKED","BORDER",
+"BORING","BORROW","BOTHER","BOTTLE","BOTTOM","BOUGHT","BOUNCE","BOWLED",
+"BRACED","BRANCH","BREACH","BREATH","BREEZY","BRIDGE","BRIGHT","BROKEN",
+"BROKER","BRONZE","BROWSE","BRUISE","BRUTAL","BUBBLE","BUCKET","BUDGET",
+"BUFFER","BULLET","BUNDLE","BURDEN","BURGER","BURNED","BURROW","BUTLER",
+"BUTTER","BUTTON","BUYING","BUZZER","CABLED","CACKLE","CACTUS","CADENT",
+"CADGER","CALLED","CALMER","CALMLY","CAMERA","CANARY","CANCEL","CANDID",
+"CANDLE","CANINE","CANNON","CANVAS","CARBON","CARDED","CARPAL","CARPET",
+"CARROT","CARTON","CASTER","CASTLE","CAUGHT","CAUSAL","CAUSED","CAVERN",
+"CELERY","CEMENT","CENTER","CENTRE","CHALKY","CHANCE","CHANCY","CHANGE",
+"CHANTY","CHARGE","CHATTY","CHEERY","CHEQUE","CHERRY","CHILLY","CHIMES",
+"CHISEL","CHOICE","CHOOSE","CHOSEN","CHUNKY","CHURCH","CINEMA","CIRCLE",
+"CIRCUS","CITRUS","CIVICS","CLEVER","CLIENT","CLIMAX","CLIMBS","CLINIC",
+"CLOSED","CLOTHS","CLOUDY","CLOVER","CLUBED","CLUMSY","COATED",
+"COBALT","COBBLE","COBWEB","COFFEE","COHORT","COLLAR","COLONY","COLOUR",
+"COMBAT","COMEDY","COMELY","COMICS","COMING","COMMIT","COMMON","COMPLY",
+"CONFER","CONTRA","CONVEY","COOKED","COOKIE","COOLED","COOLER","COPIED",
+"COPIER","COPING","COPPER","CORNER","CORPSE","CORRAL","COSMIC","COSTLY",
+"COUPLE","COURSE","COVERT","COWARD","COYOTE","CRAGGY","CRANKY","CRATER","CRAYON",
+"CREATE","CREDIT","CRISIS","CRISPY","CRITIC","CROUCH","CRUNCH","CRYING",
+"CURFEW","CURING","CURLED","CURSOR","CURTLY","CURVED","CUSTOM","CUTTER",
+"CYCLES","DABBLE","DAMAGE","DANCER","DANGER","DAPPER","DARKEN","DASHED",
+"DEALER","DEBATE","DECADE","DECENT","DECIDE","DEADLY","DEEPEN","DEEPER","DEFEAT",
+"DEFEND","DEFILE","DEFINE","DEFORM","DEFTLY","DEGREE","DELUDE","DEMAND",
+"DEMURE","DENTAL","DEPEND","DEPICT","DEPLOY","DEPORT","DEPUTY","DERIVE",
+"DESERT","DESIGN","DESIRE","DETAIL","DEVICE","DEVOTE","DIGEST","DILUTE",
+"DINNER","DIRECT","DISCUS","DISMAL","DISMAY","DIVERT","DIVIDE","DOCTOR",
+"DODGER","DOGGED","DOMAIN","DONATE","DONKEY","DOUBLE","DOWNED","DRAGON",
+"DRAINS","DRAWER","DREAMS","DRENCH","DRIFTS","DRILLS","DRINKS","DRIVER",
+"DROWNS","DRYING","DUBBED","EAGLET","EARNED","EASIER","EASILY","EDITOR",
+"EFFECT","EFFORT","EITHER","ELAPSE","ELDEST","ELEVEN","EMBLEM","EMBODY","EMBRYO",
+"EMPIRE","EMPLOY","ENABLE","ENDING","ENERGY","ENGAGE","ENGINE","ENOUGH",
+"ENSURE","ENTERS","ENTIRE","ENTITY","ENVIED","EQUITY","ESCAPE","ESTATE",
+"ETHICS","ETHNIC","EUROPE","EXACTS","EXCEED","EXCEPT","EXCESS","EXCUSE",
+"EXISTS","EXPAND","EXPECT","EXPORT","EXTEND","EXTENT","FABRIC","FACING",
+"FACTOR","FAILED","FAIRLY","FALLEN","FAMILY","FAMINE","FAMOUS","FARMED",
+"FARMER","FASTER","FATHER","FAULTY","FAVOUR","FEARED","FELLOW","FEMALE",
+"FERRET","FIDDLE","FIERCE","FIGURE","FILTER","FINELY","FINGER","FINISH",
+"FIRING","FISHED","FISHER","FITTED","FIXING","FLAMES","FLAVOR","FLEECE",
+"FLESHY","FLIGHT","FLINTY","FLOATS","FLOATY","FLOODS","FLOORS","FLOWER",
+"FLUFFY","FOLDER","FOLLOW","FONDLE","FOODIE","FOOLED","FOOTED","FORCED",
+"FOREST","FORGED","FORGET","FORGOT","FORMAL","FORMAT","FORMED","FORMER","FOURTH","FRAMED","FREAKY",
+"FREEZE","FRIEND","FRIGHT","FRINGE","FROZEN","FRUGAL","FUMBLE","FUNNEL",
+"FUTURE","GADGET","GAINED","GAMBLE","GARDEN","GARLIC","GATHER","GENDER",
+"GENIAL","GENIUS","GENTLE","GERBIL","GHOSTY","GIFTED","GINGER","GIRDLE",
+"GIVING","GLANCE","GLARED","GLAZED","GLOBAL","GLOOMY","GLOVED","GLUING",
+"GOALIE","GOBBLE","GOLDEN","GOPHER","GOSPEL","GOVERN","GRACED","GRAVEL",
+"GRIEVE","GREASE","GREEDY","GREYER","GRIMLY","GROCER","GROOVE","GROUND","GROWER","GROWTH",
+"GRUDGE","GUIDED","GUILTY","GUITAR","GULPED","GUNMAN","GUTTED","HACKED",
+"HACKER","HADRON","HAILED","HALFED","HALLOW","HALTED","HAMMER","HAMPER",
+"HANDLE","HANGER","HAPPEN","HARASS","HARBOR","HARDEN","HARDER",
+"HARROW","HAVING","HAZARD","HEADED","HEADER","HEALTH","HEARTY","HEATED",
+"HEATER","HEAVEN","HEIGHT","HELPED","HELPER","HERBAL","HIDDEN","HIGHER",
+"HIKING","HINGED","HINTED","HITMAN","HOLDER","HONEST","HOOKED","HOOVER",
+"HOPING","HORROR","HOSTED","HOTTER","HOUSED","HUMANE","HUMBLE","HUMOUR",
+"HUNGER","HUNGRY","HUNTER","HURDLE","HURLED","HYBRID","ICICLE","ICONIC",
+"IDLING","IGNITE","IGNORE","IMAGED","IMBUED","IMMUNE","IMPACT","IMPAIR",
+"IMPART","IMPEDE","IMPISH","IMPORT","IMPOSE","INBORN","INCOME","INDEED",
+"INDENT","INDIAN","INDIGO","INDOOR","INDUCT","INFANT","INFECT","INFORM",
+"INGEST","INHALE","INJURE","INLAND","INMATE","INROAD","INSANE","INSECT",
+"INSERT","INSIDE","INSIST","INSULT","INSURE","INTACT","INTAKE","INTENT",
+"INTONE","INVENT","INVEST","INVITE","INVOKE","INWARD","IODINE","IRONED",
+"IRONIC","ISLAND","ISOBAR","ISSUED","ITALIC","ITSELF","JACKAL","JACKET",
+"JAGGED","JAGUAR","JANGLE","JARGON","JARRED","JAUNTY","JERSEY","JIGGLE",
+"JIGSAW","JINGLE","JOBBED","JOCKEY","JOINED","JOVIAL","JOYFUL","JUDGED",
+"JUDGES","JUGGLE","JUMBLE","JUMPER","JUNGLE","JUNIOR","JURIST","JUSTLY",
+"KEENLY","KERNEL","KETONE","KETTLE","KIDDER","KIDNAP","KIDNEY","KINDLE",
+"KINDLY","KINGLY","KITTEN","KLAXON","KNIGHT","KNOCKS","KRAKEN","LABOUR",
+"LACKED","LADDER","LADLED","LAGOON","LANDED","LAPDOG","LAPTOP","LARGER",
+"LARVAE","LASHED","LASTED","LASTLY","LATELY","LATHER","LATTER","LAUNCH",
+"LAWFUL","LAYERS","LAYOUT","LEADER","LEAFED","LEAGUE","LEDGER","LEGACY",
+"LEGEND","LEGION","LEGUME","LENGTH","LENTIL","LESSEN","LESSER","LESSON",
+"LETTER","LEVITY","LICKED","LIABLE","LIFTED","LIGHTS","LIKELY","LIKING","LIMBER",
+"LIMPID","LINING","LINTEL","LIQUID","LIQUOR","LISTED","LISTEN","LITTLE",
+"LIVELY","LIVING","LOADED","LOCALE","LOCATE","LOCKED","LOCKET","LOFTED",
+"LOGGED","LONELY","LONGER","LOOKED","LOOSEN","LOUNGE","LOVELY","LOWEST",
+"LUMBER","LUNACY","LUNGER","LURING","LUSTRE","MAGNET","MAIDEN","MAKING",
+"MALADY","MAMMAL","MANAGE","MANGER","MANNER","MANTRA","MARBLE","MARGIN",
+"MARINA","MARKED","MARKET","MARMOT","MAROON","MASCOT","MASQUE","MASTER",
+"MATTER","MATURE","MEADOW","MEDDLE","MEDIAN","MEDIUM","MEDLEY","MELLOW",
+"MEMBER","MEMOIR","MEMORY","MENACE","MENTAL","MENTOR","MERELY","MERGER",
+"METHOD","METRIC","MIDDLE","MIDGET","MIGHTY","MILLED","MINDED","MINGLE",
+"MINING","MINNOW","MINUTE","MIRAGE","MIRROR","MISERY","MISFIT","MISSED",
+"MIXING","MOBILE","MODERN","MODEST","MODISH","MODULE","MOLDED","MOMENT",
+"MONDAY","MONKEY","MORSEL","MORTAL","MOTION","MOTIVE","MOTTLE","MUCKED",
+"MUFFIN","MURDER","MUSCLE","MUSEUM","MUTINY","MUTUAL","NAPKIN","NARROW",
+"NATION","NATIVE","NATURE","NEARBY","NEATLY","NECTAR","NEEDED","NESTED",
+"NESTLE","NEURAL","NEUTER","NIBBLE","NIMBLE","NITRIC","NOBLER","NOBODY",
+"NORMAL","NOTARY","NOTICE","NUANCE","NUGGET","NUMBER","NURSED","OBJECT",
+"OBLONG","OBTAIN","OCCULT","OCELOT","ODDEST","OFFICE","OFFSET","ONLINE",
+"ONWARD","OPENED","OPPOSE","OPTION","ORANGE","ORCHID","ORDEAL","ORIGIN",
+"ORNATE","ORPHAN","OSPREY","OUTAGE","OUTDID","OUTFOX","OUTING","OUTRUN",
+"OUTSET","OUTWIT","OVULAR","OYSTER","PACIFY","PACKED","PACKET","PADDLE",
+"PAGODA","PALACE","PALATE","PALING","PALLET","PALTRY","PAMPER","PANDER",
+"PANTRY","PAPAYA","PARCEL","PARDON","PARENT","PARISH","PARITY","PARKED",
+"PARODY","PAROLE","PARROT","PARSED","PARTED","PARTLY","PASTED","PASTEL",
+"PATENT","PATINA","PATROL","PATTER","PAUPER","PAVING","PAWPAW","PAYING",
+"PEACHY","PEANUT","PEBBLE","PEELER","PEERED","PELLET","PENCIL","PEPPED",
+"PEPPER","PERIOD","PERISH","PERMIT","PERSON","PHASED","PHOBIA","PHOTON",
+"PHRASE","PICKED","PICKLE","PICNIC","PIGEON","PILFER","PILLOW","PIMPLE",
+"PINEAL","PINKER","PIRATE","PLACED","PLACID","PLANAR","PLANED","PLANER",
+"PLANET","PLASMA","PLATED","PLAYER","PLEASE","PLENTY","PLIGHT","PLOUGH",
+"PLUCKY","PLUNGE","POCKET","POETIC","POINTY","POLICE","POLICY","POLITE",
+"POLLEN","PONDER","POORLY","PORTAL","PORTLY","POTATO","POTENT","POTION",
+"POWDER","PRAISE","PRAYER","PREFAB","PRESET","PRETTY","PRICED","PRIEST",
+"PRIMAL","PRIMED","PRINCE","PRISON","PROBED","PROFIT","PROPER","PROTON","PROVED",
+"PRUNED","PSYCHE","PUBLIC","PUDDLE","PULLED","PULLEY","PULPIT","PUPATE",
+"PURGED","PURIFY","PURIST","PURITY","PURPLE","PURSED","PUSHER","PUTRID",
+"PYTHON","QUAINT","QUARRY","QUARTZ","QUENCH","QUEASY","QUEUED","QUIVER","QUOTED",
+"RABBIT","RACIAL","RACIER","RACING","RACKET","RADIAL","RAFFLE","RAGGED","RAISED","RANDOM",
+"RANGER","RAPTOR","RARITY","RATHER","RATION","RATTLE","RAVINE","RAVISH",
+"REACTS","READER","REALLY","REALTY","REASON","REBATE","REBOOT","REBUFF",
+"RECALL","RECAST","RECENT","RECKON","RECORD","REDEEM","REFINE","REFORM",
+"REFUND","REFUSE","REGARD","REGENT","REGION","RELATE","RELIEF","RELISH",
+"REMAIN","REMIND","REMOVE","REPAIR","REPEAL","REPEAT","REPENT","REPLAY",
+"REPORT","RESCUE","RESIDE","RESIGN","RESIST","RESULT","RESUME","RETAIL",
+"RETAIN","RETINA","RETURN","REVEAL","REVIEW","REWARD","RHYTHM","RIBBON",
+"RIDING","RIGOUR","RIPPLE","RISING","RITUAL","ROBBER","ROBUST","ROCKET",
+"ROLLED","ROOKIE","ROOTED","ROTTEN","ROUNCE","ROUTED","RUBBER","RUBBLE",
+"RUGGED","RULING","RUMBLE","RUMOUR","RUNNER","RUSHED","RUSTIC","SADDLE","SAFARI",
+"SAFELY","SAFETY","SAILED","SALARY","SALTED","SALUTE","SAMPLE","SANDAL",
+"SANDER","SAVAGE","SAVING","SAYING","SCALER","SCARCE","SCENIC","SCHEME",
+"SCORCH","SCREEN","SCROLL","SEARCH","SEASON","SECOND","SECRET","SECTOR",
+"SECURE","SEDATE","SEEING","SEEMLY","SELECT","SELLER","SENIOR","SENSED",
+"SERENE","SERIES","SERMON","SERVER","SETTLE","SEVERE","SHADOW","SHAKEN",
+"SHAPED","SHAPER","SHARED","SHEATH","SHELVE","SHIELD","SHIFTY","SHINED",
+"SHIVER","SHOULD","SHOVEL","SHOWED","SHOWER","SHRANK","SHRIEK","SHYEST",
+"SICKEN","SIGNAL","SILENT","SILVER","SIMPLE","SIMPLY","SINGER","SINGLE",
+"SISTER","SKETCH","SKINNY","SLEEPY","SLIGHT","SLIVER","SLOGAN","SMELLY",
+"SMILED","SMOOTH","SNEAKY","SNEEZE","SNOWED","SOCIAL","SOCKET","SODDEN",
+"SOFTEN","SOLACE","SOLVED","SOMBRE","SONNET","SOOTHE","SORTED","SOUGHT",
+"SOURCE","SPACED","SPARSE","SPEEDY","SPHERE","SPICED","SPIDER","SPIRAL",
+"SPIRIT","SPLASH","SPOKEN","SPONGE","SPORTY","SPOTTY","SPREAD","SPRING",
+"SPRINT","SPROUT","SPRUCE","SPYING","SQUARE","SQUASH","SQUEAK","SQUIRM",
+"STABLE","STAGED","STAKED","STAMEN","STANCE","STAPLE","STARCH","STARED","STARES","STARTS","STARVE","STATED",
+"STATIC","STAYED","STEADY","STEELY","STENCH","STICKY","STOLEN","STORED","STORMY",
+"STRAIN","STREAK","STREAM","STREET","STRICT","STRIDE","STRIKE","STRING",
+"STRIPE","STRIVE","STROKE","STRONG","STROVE","STRUCK","STUDIO","STUFFY",
+"STUPID","STURDY","SUBDUE","SUBMIT","SUBTLE","SUDDEN","SUFFER","SUITED","SUMMER",
+"SUMMIT","SUNLIT","SUNSET","SUPPER","SUPPLY","SURELY","SURVEY","SYSTEM",
+"TABLET","TACTIC","TAINTS","TALENT","TALKED","TALLER","TAMPER","TANDEM",
+"TANGLE","TAPPED","TARIFF","TARTAN","TASTED","TATTER","TAUGHT",
+"TEACUP","TEAPOT","TEARLY","TEDIUM","TEEING","TEETER","TEMPER","TEMPLE",
+"TENANT","TENDER","TENNIS","TENSED","TENSOR","TENTHS","TERMED","TESTED",
+"TESTER","THANKS","THATCH","THEMED","THENCE","THEORY","THIRST","THORAX",
+"THOUGH","THRASH","THREAD","THREAT","THRIVE","THRONG","THROWN","THRUSH","THWACK",
+"TICKER","TIDIER","TIDING","TIEING","TILTED","TIMBER","TIMELY","TIMING",
+"TINGLE","TINKER","TINKLE","TIPPED","TIPTOE","TIRADE","TISSUE","TITLED",
+"TODDLE","TOFFEE","TOGGLE","TOILED","TONGUE","TOOLED","TOPAZE","TOPPLE",
+"TORPID","TORQUE","TORTIC","TOSSUP","TOUCAN","TOUGHY","TOURED","TOWARD",
+"TOWELD","TOWING","TOXINS","TRACED","TRACKY","TRACTS","TRADED","TRADER",
+"TRAGIC","TRANCE","TRAVEL","TREATY","TREBLE","TREMOR","TRENCH","TRENDY",
+"TRIAGE","TRICKY","TRIFLE","TRIMLY","TRIPLE","TRIVIA","TROPHY","TROUGH",
+"TROWEL","TRUDGE","TRUSTY","TRYING","TRYOUT","TUBING","TUCKED",
+"TUMBLE","TUMOUR","TUNING","TUNNEL","TURBAN","TURBID","TURKEY","TURNIP",
+"TURRET","TURTLE","TUSSLE","TWELVE","TWENTY","TWITCH","TYCOON","TYPIED",
+"UGLIER","ULCERS","UMPIRE","UNABLE","UNBOLT","UNCURL","UNDONE","UNEASY",
+"UNFOLD","UNHOOK","UNIQUE","UNISON","UNITED","UNJUST","UNKIND","UNLESS",
+"UNLIKE","UNLOCK","UNPACK","UNREAD","UNREST","UNROLL","UNSEEN","UNSENT",
+"UNSURE","UNTIDY","UNTOLD","UNWIND","UNWISE","UPBEAT","UPDATE","UPHILL",
+"UPHOLD","UPKEEP","UPLAND","UPLIFT","UPPITY","UPRUSH","UPSHOT","UPTAKE",
+"UPTURN","UPWARD","URGENT","URGING","URINAL","URTEXT","UTMOST","UTOPIA",
+"VACANT","VACATE","VACUUM","VAGARY","VAGUED","VAINLY","VALLEY","VALOUR",
+"VALUED","VALVED","VANDAL","VAPOUR","VARIED","VARLET","VASTLY","VECTOR",
+"VELVET","VENDOR","VENIAL","VENOUS","VERBAL","VERGED","VERIFY","VERMIN",
+"VERSUS","VERTEX","VESSEL","VEXING","VIABLE","VICARL","VICTIM","VICTOR",
+"VIEWED","VIEWER","VIGOUR","VILLUS","VIOLET","VIRGIN","VIRTUE","VISCID",
+"VISION","VISUAL","VIVACE","VIVIFY","VOGUED","VOLLEY","VORTEX",
+"VOTIVE","VOYAGE","WACKER","WADDLE","WAGGLE","WAILER","WAISTE","WAITER",
+"WAIVER","WAKING","WALKED","WALKER","WALLED","WALNUT","WANDER","WANING",
+"WANTED","WARBLE","WARMER","WARMTH","WARNED","WARNER","WARPED","WARREN",
+"WASHED","WASHER","WASTED","WATERY","WAVING","WEAKEN","WEANED","WEAPON",
+"WEARER","WEAVED","WEBBED","WEBLOG","WEDDED","WEDGED","WEEPER","WEIGHT",
+"WEIRDO","WELDED","WELTER","WESTER","WETTED","WETTER","WHACKO","WHALED","WHENCE",
+"WHILST","WHINNY","WHISKY","WHITEN","WHOLLY","WHOOSH","WICKED",
+"WIDELY","WIDEST","WIELDY","WIGGLE","WILDER","WILFUL","WILLOW","WILTED",
+"WINCED","WINDED","WINDOW","WINERY","WINGLE","WINNER","WINTER","WISDOM",
+"WITHER","WITHIN","WIZARD","WOBBLE","WOODED","WOODEN","WOOLLY","WORDED",
+"WORKED","WORKER","WORSEN","WORTHY","WREATH","WRITER","WRONGS","XENIAL",
+"XYLOSE","YACHTY","YANKED","YAWNED","YEARLY","YEASTY","YELLED","YELPED",
+"YELPER","YONDER","YOWLED","ZENITH","ZAPPED","ZESTED","ZESTER","ZIGZAG","ZINGER",
+"ZIPPER","ZIRCON","ZONING","ZONKED","ZOSTER",
+];
