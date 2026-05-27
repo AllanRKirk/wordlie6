@@ -351,6 +351,47 @@ button:hover {
   }
 }
 
+/* ---------- BIG CONGRATULATIONS OVERLAY ---------- */
+#congrats-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  transition: opacity 0.4s ease;
+}
+
+#congrats-overlay.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.congrats-box {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  text-align: center;
+  animation: popIn 0.5s ease-out;
+}
+
+.congrats-box h1 {
+  font-size: 2.2em;
+  color: black;
+  margin: 0;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+
 /* ---------- FIXED LICENSE FOOTER ---------- */
 #license {
   position: fixed;
