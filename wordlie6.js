@@ -25,6 +25,7 @@ const rows = 6;
 const cols = 6;
 const grid = [];
 let hintUsed = false;
+let gameOver = false;   // <--- NEW
 
 // -------------------- Stats --------------------
 let timesCorrect = 0;
@@ -74,9 +75,6 @@ function updateStats() {
 loadStats();
 updateStats();
 
-// NOTE: removed beforeunload reset — you said "persistent stats"
-// If you ever want to clear stats, do it via a dedicated button instead.
-
 // -------------------- Build the board --------------------
 for (let r = 0; r < rows; r++) {
   const row = document.createElement("div");
@@ -112,7 +110,8 @@ const keyButtons = Array.from(document.querySelectorAll(".key"));
 
 // -------------------- Keyboard input --------------------
 function pressKey(key) {
-  if (currentRow >= rows) return; // game over, ignore
+  if (gameOver) return;          // <--- NEW
+  if (currentRow >= rows) return;
   if (currentCol < cols) {
     grid[currentRow][currentCol].textContent = key;
     currentCol++;
@@ -120,6 +119,7 @@ function pressKey(key) {
 }
 
 deleteBtn.addEventListener("click", () => {
+  if (gameOver) return;          // <--- NEW
   if (currentCol > 0) {
     currentCol--;
     grid[currentRow][currentCol].textContent = "";
@@ -147,7 +147,8 @@ window.addEventListener("click", (e) => {
 
 // -------------------- Process guess (duplicate‑letter safe) --------------------
 function handleGuess() {
-  if (currentRow >= rows) return; // game over
+  if (gameOver) return;          // <--- NEW
+  if (currentRow >= rows) return;
   if (currentCol < cols) return;
 
   const guess = grid[currentRow].map(t => t.textContent).join("");
@@ -219,7 +220,23 @@ function handleWin() {
 
   saveStats();
   updateStats();
+
+  // lock game
+  gameOver = true;
+
+  // flash the winning word
+  flashWinningRow(currentRow);
+
+  // show stars + sound
   showCelebration();
+
+  // message bar instruction
+  message.textContent = "Select New Game to continue";
+
+  // disable all buttons except NEW GAME
+  document.querySelectorAll("button").forEach(btn => {
+    if (btn.id !== "new-game") btn.disabled = true;
+  });
 }
 
 function handleLoss() {
@@ -230,7 +247,18 @@ function handleLoss() {
   saveStats();
   updateStats();
 
-  setTimeout(resetGame, 4000);
+  gameOver = true;
+
+  // disable all buttons except NEW GAME
+  document.querySelectorAll("button").forEach(btn => {
+    if (btn.id !== "new-game") btn.disabled = true;
+  });
+}
+
+// -------------------- Flash winning row --------------------
+function flashWinningRow(rowIndex) {
+  const tiles = grid[rowIndex];
+  tiles.forEach(tile => tile.classList.add("flash-tile"));
 }
 
 // -------------------- Keyboard coloring --------------------
@@ -256,6 +284,7 @@ revealBtn.addEventListener("click", revealWord);
 
 // -------------------- Hint logic --------------------
 function showHint() {
+  if (gameOver) return;          // <--- NEW
   if (hintUsed) {
     message.textContent = "Hint already used!";
     return;
@@ -270,10 +299,12 @@ function showHint() {
 
 // -------------------- Reveal word --------------------
 function revealWord() {
+  if (gameOver) return;          // <--- NEW
   message.textContent = `The word is ${correctWord}`;
   document.querySelectorAll("button").forEach(btn => {
     if (btn.id !== "new-game") btn.disabled = true;
   });
+  gameOver = true;
 }
 
 // -------------------- Reset game --------------------
@@ -285,6 +316,7 @@ function resetGame() {
   board.querySelectorAll(".tile").forEach(tile => {
     tile.textContent = "";
     tile.style.backgroundColor = "black";
+    tile.classList.remove("flash-tile");   // <--- clear flashing
   });
 
   keyButtons.forEach(k => {
@@ -295,13 +327,14 @@ function resetGame() {
   currentRow = 0;
   currentCol = 0;
   hintUsed = false;
+  gameOver = false;
   correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
   updateStats();
 }
 
 // -------------------- Celebration animation --------------------
 function showCelebration() {
-  message.textContent = "Congratulations!";
+  // keep your existing stars + sound, but no auto-reset
   cheer.currentTime = 0;
   cheer.play();
 
@@ -315,11 +348,6 @@ function showCelebration() {
     document.body.appendChild(star);
     star.addEventListener("animationend", () => star.remove());
   }
-
-  setTimeout(() => {
-    message.textContent = "";
-    resetGame();
-  }, 5000);
 }
 
 // -------------------- Hide splash once ready --------------------
