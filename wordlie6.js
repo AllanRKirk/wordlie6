@@ -1,4 +1,4 @@
-/* wordlie6.js — optimised persistent‑stats version */
+/* wordlie6.js — updated with flashing win row + big congratulations overlay */
 /* allan */
 
 // -------------------- Element references --------------------
@@ -25,7 +25,7 @@ const rows = 6;
 const cols = 6;
 const grid = [];
 let hintUsed = false;
-let gameOver = false;   // <--- NEW
+let gameOver = false;
 
 // -------------------- Stats --------------------
 let timesCorrect = 0;
@@ -33,7 +33,7 @@ let gamesPlayed = 0;
 let currentStreak = 0;
 let bestStreak = 0;
 
-// -------------------- Load stats from localStorage --------------------
+// -------------------- Load stats --------------------
 function loadStats() {
   try {
     const saved = JSON.parse(localStorage.getItem("wordlie6stats"));
@@ -43,9 +43,7 @@ function loadStats() {
       currentStreak = saved.currentStreak || 0;
       bestStreak = saved.bestStreak || 0;
     }
-  } catch (e) {
-    // ignore corrupted data
-  }
+  } catch (e) {}
 }
 
 // -------------------- Save stats --------------------
@@ -105,12 +103,12 @@ layout.forEach(line => {
   keyboard.appendChild(rowDiv);
 });
 
-// Cache key buttons for colouring
+// Cache key buttons
 const keyButtons = Array.from(document.querySelectorAll(".key"));
 
 // -------------------- Keyboard input --------------------
 function pressKey(key) {
-  if (gameOver) return;          // <--- NEW
+  if (gameOver) return;
   if (currentRow >= rows) return;
   if (currentCol < cols) {
     grid[currentRow][currentCol].textContent = key;
@@ -119,7 +117,7 @@ function pressKey(key) {
 }
 
 deleteBtn.addEventListener("click", () => {
-  if (gameOver) return;          // <--- NEW
+  if (gameOver) return;
   if (currentCol > 0) {
     currentCol--;
     grid[currentRow][currentCol].textContent = "";
@@ -138,16 +136,15 @@ closeHelpBtn.addEventListener("click", () => {
   helpModal.classList.add("hidden");
 });
 
-// Close by clicking outside the box
 window.addEventListener("click", (e) => {
   if (e.target === helpModal) {
     helpModal.classList.add("hidden");
   }
 });
 
-// -------------------- Process guess (duplicate‑letter safe) --------------------
+// -------------------- Process guess --------------------
 function handleGuess() {
-  if (gameOver) return;          // <--- NEW
+  if (gameOver) return;
   if (currentRow >= rows) return;
   if (currentCol < cols) return;
 
@@ -158,7 +155,6 @@ function handleGuess() {
     return;
   }
 
-  // Build frequency map of correct word
   const letterCounts = {};
   for (const ch of correctWord) {
     letterCounts[ch] = (letterCounts[ch] || 0) + 1;
@@ -166,7 +162,7 @@ function handleGuess() {
 
   const result = Array(cols).fill("absent");
 
-  // First pass: mark greens
+  // Greens
   for (let i = 0; i < cols; i++) {
     if (guess[i] === correctWord[i]) {
       result[i] = "correct";
@@ -174,10 +170,9 @@ function handleGuess() {
     }
   }
 
-  // Second pass: mark yellows only if available
+  // Yellows
   for (let i = 0; i < cols; i++) {
     if (result[i] === "correct") continue;
-
     const letter = guess[i];
     if (letterCounts[letter] > 0) {
       result[i] = "present";
@@ -185,12 +180,12 @@ function handleGuess() {
     }
   }
 
-  // Apply colours to tiles + keyboard
+  // Apply colours
   for (let i = 0; i < cols; i++) {
     const tile = grid[currentRow][i];
     const letter = guess[i];
 
-    let color = "#666"; // grey
+    let color = "#666";
     if (result[i] === "correct") color = "green";
     else if (result[i] === "present") color = "gold";
 
@@ -221,19 +216,14 @@ function handleWin() {
   saveStats();
   updateStats();
 
-  // lock game
   gameOver = true;
 
-  // flash the winning word
   flashWinningRow(currentRow);
-
-  // show stars + sound
   showCelebration();
+  showCongratsOverlay();
 
-  // message bar instruction
   message.textContent = "Select New Game to continue";
 
-  // disable all buttons except NEW GAME
   document.querySelectorAll("button").forEach(btn => {
     if (btn.id !== "new-game") btn.disabled = true;
   });
@@ -249,7 +239,6 @@ function handleLoss() {
 
   gameOver = true;
 
-  // disable all buttons except NEW GAME
   document.querySelectorAll("button").forEach(btn => {
     if (btn.id !== "new-game") btn.disabled = true;
   });
@@ -261,7 +250,17 @@ function flashWinningRow(rowIndex) {
   tiles.forEach(tile => tile.classList.add("flash-tile"));
 }
 
-// -------------------- Keyboard coloring --------------------
+// -------------------- Big congratulations overlay --------------------
+function showCongratsOverlay() {
+  const overlay = document.getElementById("congrats-overlay");
+  overlay.classList.remove("hidden");
+
+  setTimeout(() => {
+    overlay.classList.add("hidden");
+  }, 2500);
+}
+
+// -------------------- Keyboard colouring --------------------
 function colorKey(letter, color) {
   keyButtons.forEach(key => {
     if (key.textContent === letter) {
@@ -284,7 +283,7 @@ revealBtn.addEventListener("click", revealWord);
 
 // -------------------- Hint logic --------------------
 function showHint() {
-  if (gameOver) return;          // <--- NEW
+  if (gameOver) return;
   if (hintUsed) {
     message.textContent = "Hint already used!";
     return;
@@ -299,7 +298,7 @@ function showHint() {
 
 // -------------------- Reveal word --------------------
 function revealWord() {
-  if (gameOver) return;          // <--- NEW
+  if (gameOver) return;
   message.textContent = `The word is ${correctWord}`;
   document.querySelectorAll("button").forEach(btn => {
     if (btn.id !== "new-game") btn.disabled = true;
@@ -316,7 +315,7 @@ function resetGame() {
   board.querySelectorAll(".tile").forEach(tile => {
     tile.textContent = "";
     tile.style.backgroundColor = "black";
-    tile.classList.remove("flash-tile");   // <--- clear flashing
+    tile.classList.remove("flash-tile");
   });
 
   keyButtons.forEach(k => {
@@ -334,7 +333,6 @@ function resetGame() {
 
 // -------------------- Celebration animation --------------------
 function showCelebration() {
-  // keep your existing stars + sound, but no auto-reset
   cheer.currentTime = 0;
   cheer.play();
 
@@ -350,5 +348,5 @@ function showCelebration() {
   }
 }
 
-// -------------------- Hide splash once ready --------------------
+// -------------------- Hide splash --------------------
 document.getElementById("splash-screen").style.display = "none";
