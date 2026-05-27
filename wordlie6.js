@@ -347,6 +347,32 @@ function showCelebration() {
     star.addEventListener("animationend", () => star.remove());
   }
 }
+// -------------------- Force Update --------------------
+document.getElementById("force-update").addEventListener("click", async () => {
+  message.textContent = "Updating… please wait";
+
+  // Unregister all service workers
+  if ("serviceWorker" in navigator) {
+    const regs = await navigator.serviceWorker.getRegistrations();
+    for (const reg of regs) {
+      await reg.unregister();
+    }
+  }
+
+  // Clear all caches
+  if ("caches" in window) {
+    const names = await caches.keys();
+    for (const name of names) {
+      await caches.delete(name);
+    }
+  }
+
+  // Reload fresh
+  setTimeout(() => {
+    location.reload(true);
+  }, 500);
+});
+
 
 // -------------------- Hide splash --------------------
 document.getElementById("splash-screen").style.display = "none";
