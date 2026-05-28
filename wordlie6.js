@@ -2,6 +2,7 @@
 /* allan */
 
 // -------------------- Element references --------------------
+const GAME_VERSION = "v1";
 const board = document.getElementById("board");
 const keyboard = document.getElementById("keyboard");
 const message = document.getElementById("message");
@@ -243,6 +244,9 @@ function handleLoss() {
     if (btn.id !== "new-game") btn.disabled = true;
   });
 }
+// -------------------- Version Display --------------------
+document.getElementById("version-display").textContent = "Version: " + GAME_VERSION;
+
 
 // -------------------- Flash winning row --------------------
 function flashWinningRow(rowIndex) {
