@@ -9,6 +9,8 @@
   "theme_color": "#f9cdd2",
   "orientation": "portrait",
 
+  "version": "1.0.1",
+
   "icons": [
     { "src": "assets/images/icon-44x44.png", "sizes": "44x44", "type": "image/png" },
     { "src": "assets/images/icon-50x50.png", "sizes": "50x50", "type": "image/png" },
