@@ -1,5 +1,7 @@
-/* wordlie6.js — updated with flashing win row + big congratulations overlay */
+/* wordlie6.js — final patched version with reliable New Game reset */
 /* allan */
+
+document.addEventListener("DOMContentLoaded", () => {
 
 // -------------------- Element references --------------------
 const GAME_VERSION = "v1";
@@ -49,12 +51,7 @@ function loadStats() {
 
 // -------------------- Save stats --------------------
 function saveStats() {
-  const data = {
-    timesCorrect,
-    gamesPlayed,
-    currentStreak,
-    bestStreak
-  };
+  const data = { timesCorrect, gamesPlayed, currentStreak, bestStreak };
   localStorage.setItem("wordlie6stats", JSON.stringify(data));
 }
 
@@ -62,15 +59,10 @@ function saveStats() {
 function updateStats() {
   const winPercent =
     gamesPlayed > 0 ? Math.round((timesCorrect / gamesPlayed) * 100) : 0;
-
   statsBox.textContent =
-    `Times Correct: ${timesCorrect} | ` +
-    `Games Played: ${gamesPlayed} | ` +
-    `Win %: ${winPercent}% | ` +
-    `Streak: ${currentStreak} | Best: ${bestStreak}`;
+    `Times Correct: ${timesCorrect} | Games Played: ${gamesPlayed} | Win %: ${winPercent}% | Streak: ${currentStreak} | Best: ${bestStreak}`;
 }
 
-// Load stats on startup
 loadStats();
 updateStats();
 
@@ -104,7 +96,6 @@ layout.forEach(line => {
   keyboard.appendChild(rowDiv);
 });
 
-// Cache key buttons
 const keyButtons = Array.from(document.querySelectorAll(".key"));
 
 // -------------------- Keyboard input --------------------
@@ -129,19 +120,9 @@ deleteBtn.addEventListener("click", () => {
 enterBtn.addEventListener("click", handleGuess);
 
 // -------------------- How to Play Modal --------------------
-instructionsBtn.addEventListener("click", () => {
-  helpModal.classList.remove("hidden");
-});
-
-closeHelpBtn.addEventListener("click", () => {
-  helpModal.classList.add("hidden");
-});
-
-window.addEventListener("click", (e) => {
-  if (e.target === helpModal) {
-    helpModal.classList.add("hidden");
-  }
-});
+instructionsBtn.addEventListener("click", () => helpModal.classList.remove("hidden"));
+closeHelpBtn.addEventListener("click", () => helpModal.classList.add("hidden"));
+window.addEventListener("click", e => { if (e.target === helpModal) helpModal.classList.add("hidden"); });
 
 // -------------------- Process guess --------------------
 function handleGuess() {
@@ -150,17 +131,13 @@ function handleGuess() {
   if (currentCol < cols) return;
 
   const guess = grid[currentRow].map(t => t.textContent).join("");
-
   if (!WORDS.includes(guess)) {
     message.textContent = "Not in word list!";
     return;
   }
 
   const letterCounts = {};
-  for (const ch of correctWord) {
-    letterCounts[ch] = (letterCounts[ch] || 0) + 1;
-  }
-
+  for (const ch of correctWord) letterCounts[ch] = (letterCounts[ch] || 0) + 1;
   const result = Array(cols).fill("absent");
 
   // Greens
@@ -185,11 +162,9 @@ function handleGuess() {
   for (let i = 0; i < cols; i++) {
     const tile = grid[currentRow][i];
     const letter = guess[i];
-
     let color = "#666";
     if (result[i] === "correct") color = "green";
     else if (result[i] === "present") color = "gold";
-
     tile.style.backgroundColor = color;
     colorKey(letter, color);
   }
@@ -201,10 +176,7 @@ function handleGuess() {
 
   currentRow++;
   currentCol = 0;
-
-  if (currentRow >= rows) {
-    handleLoss();
-  }
+  if (currentRow >= rows) handleLoss();
 }
 
 // -------------------- Win / Loss handling --------------------
@@ -213,40 +185,40 @@ function handleWin() {
   gamesPlayed++;
   currentStreak++;
   if (currentStreak > bestStreak) bestStreak = currentStreak;
-
   saveStats();
   updateStats();
-
-  gameOver = true;
 
   flashWinningRow(currentRow);
   showCelebration();
   showCongratsOverlay();
-
   message.textContent = "Select New Game to continue";
 
   document.querySelectorAll("button").forEach(btn => {
     if (btn.id !== "new-game") btn.disabled = true;
   });
+
+  // Allow New Game to respond
+  gameOver = false;
 }
 
 function handleLoss() {
   gamesPlayed++;
   currentStreak = 0;
-
   message.textContent = `Game Over! Word was ${correctWord}`;
   saveStats();
   updateStats();
 
-  gameOver = true;
-
   document.querySelectorAll("button").forEach(btn => {
     if (btn.id !== "new-game") btn.disabled = true;
   });
+
+  currentRow = 0;
+  currentCol = 0;
+  gameOver = false;
 }
+
 // -------------------- Version Display --------------------
 document.getElementById("version-display").textContent = "Version: " + GAME_VERSION;
-
 
 // -------------------- Flash winning row --------------------
 function flashWinningRow(rowIndex) {
@@ -258,10 +230,7 @@ function flashWinningRow(rowIndex) {
 function showCongratsOverlay() {
   const overlay = document.getElementById("congrats-overlay");
   overlay.classList.remove("hidden");
-
-  setTimeout(() => {
-    overlay.classList.add("hidden");
-  }, 2500);
+  setTimeout(() => overlay.classList.add("hidden"), 2500);
 }
 
 // -------------------- Keyboard colouring --------------------
@@ -273,9 +242,7 @@ function colorKey(letter, color) {
         color === "green" ||
         (color === "gold" && current !== "green") ||
         (color === "#666" && current !== "green" && current !== "gold")
-      ) {
-        key.style.backgroundColor = color;
-      }
+      ) key.style.backgroundColor = color;
     }
   });
 }
@@ -288,13 +255,8 @@ revealBtn.addEventListener("click", revealWord);
 // -------------------- Hint logic --------------------
 function showHint() {
   if (gameOver) return;
-  if (hintUsed) {
-    message.textContent = "Hint already used!";
-    return;
-  }
-
+  if (hintUsed) { message.textContent = "Hint already used!"; return; }
   hintUsed = true;
-
   const index = Math.floor(Math.random() * correctWord.length);
   const letter = correctWord[index];
   message.textContent = `Hint: Letter ${index + 1} is '${letter}'`;
@@ -307,11 +269,13 @@ function revealWord() {
   document.querySelectorAll("button").forEach(btn => {
     if (btn.id !== "new-game") btn.disabled = true;
   });
-  gameOver = true;
+  gameOver = false;
 }
 
 // -------------------- Reset game --------------------
 function resetGame() {
+  gameOver = false;
+
   document.querySelectorAll("button").forEach(btn => {
     btn.disabled = false;
   });
@@ -330,7 +294,6 @@ function resetGame() {
   currentRow = 0;
   currentCol = 0;
   hintUsed = false;
-  gameOver = false;
   correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
   updateStats();
 }
@@ -351,32 +314,5 @@ function showCelebration() {
     star.addEventListener("animationend", () => star.remove());
   }
 }
-// -------------------- Force Update --------------------
-document.getElementById("force-update").addEventListener("click", async () => {
-  message.textContent = "Updating… please wait";
 
-  // Unregister all service workers
-  if ("serviceWorker" in navigator) {
-    const regs = await navigator.serviceWorker.getRegistrations();
-    for (const reg of regs) {
-      await reg.unregister();
-    }
-  }
-
-  // Clear all caches
-  if ("caches" in window) {
-    const names = await caches.keys();
-    for (const name of names) {
-      await caches.delete(name);
-    }
-  }
-
-  // Reload fresh
-  setTimeout(() => {
-    location.reload(true);
-  }, 500);
-});
-
-
-// -------------------- Hide splash --------------------
-document.getElementById("splash-screen").style.display = "none";
+}); // END DOMContentLoaded
