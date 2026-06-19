@@ -21,7 +21,15 @@ const instructionsBtn = document.getElementById("instructions");
 const closeHelpBtn = document.getElementById("close-help");
 
 // -------------------- Game state --------------------
-let correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+let correctWord;
+if (Array.isArray(WORDS) && WORDS.length > 0) {
+  correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+} else {
+  // Fallback so the game still runs even if dictionary.js fails
+  correctWord = "PUZZLE";
+  console.warn("WORDS not available; using fallback word:", correctWord);
+}
+
 let currentRow = 0;
 let currentCol = 0;
 const rows = 6;
@@ -131,7 +139,7 @@ function handleGuess() {
   if (currentCol < cols) return;
 
   const guess = grid[currentRow].map(t => t.textContent).join("");
-  if (!WORDS.includes(guess)) {
+  if (!Array.isArray(WORDS) || !WORDS.includes(guess)) {
     message.textContent = "Not in word list!";
     return;
   }
@@ -294,7 +302,14 @@ function resetGame() {
   currentRow = 0;
   currentCol = 0;
   hintUsed = false;
-  correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+
+  if (Array.isArray(WORDS) && WORDS.length > 0) {
+    correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
+  } else {
+    correctWord = "PUZZLE";
+    console.warn("WORDS not available on reset; using fallback word:", correctWord);
+  }
+
   updateStats();
 }
 
