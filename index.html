@@ -17,7 +17,7 @@
         .catch(err => console.log("Service Worker registration failed", err));
     }
   </script>
-  <!-- Styles -->
+
   <link rel="stylesheet" href="wordlie6.css">
 </head>
 
@@ -31,23 +31,17 @@
     </div>
   </div>
 
-  <!-- Game Title -->
   <h1>Wordlie6</h1>
 
-  <!-- Game Grid -->
   <div id="board"></div>
-  <!-- Keyboard -->
   <div id="keyboard"></div>
 
-  <!-- Stats line -->
   <div id="stats"></div>
 
   <!-- Controls -->
   <div id="controls">
     <button id="enter">ENTER</button>
     <button id="delete">DELETE</button>
-	<button id="force-update">FORCE UPDATE</button>
-
   </div>
 
   <!-- Extra options -->
@@ -57,10 +51,9 @@
     <button id="reveal">REVEAL WORD</button>
     <button id="instructions">HOW TO PLAY</button>
   </div>
-  <!-- Message line -->
+
   <div id="message"></div>
 
-  <!-- Celebration Sound -->
   <audio id="cheer-sound" src="assets/sounds/cheers.mp3" preload="auto"></audio>
 
   <!-- How to Play Modal -->
@@ -78,33 +71,31 @@
         <li>Press ENTER to submit, DELETE to erase.</li>
         <li>“Show Hint” gives one random letter.</li>
       </ul>
-	  <p class="note">Solve as many words as you can and keep your streak going!</p>
+      <p class="note">Solve as many words as you can and keep your streak going!</p>
     </div>
   </div>
 
-  <!-- Scripts -->
   <script src="dictionary.js?v=1"></script>
   <script src="wordlie6.js"></script>
 
-  <!-- Splash Screen Fade -->
   <script>
     window.addEventListener("load", () => {
       const splash = document.getElementById("splash-screen");
       setTimeout(() => splash.classList.add("hidden"), 1200);
     });
   </script>
-	<!-- Congratulations Overlay -->
-<div id="congrats-overlay" class="hidden">
-  <div class="congrats-box">
-    <h1>CONGRATULATIONS!</h1>
+
+  <div id="congrats-overlay" class="hidden">
+    <div class="congrats-box">
+      <h1>CONGRATULATIONS!</h1>
+    </div>
   </div>
-</div>
-  <!-- Footer -->
+
   <p style="text-align:center; font-size:12px; color:black;">
     © 2026 Allan Kirk – Licensed copy
   </p>
-	<div id="version-display">Version: v1</div>
 
+  <div id="version-display">Version: v1</div>
 
 </body>
 </html>
