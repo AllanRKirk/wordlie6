@@ -3,8 +3,9 @@
 html, body {
   margin: 0;
   padding: 0;
-  height: 100vh;          /* lock to viewport height */
-  overflow: hidden;       /* prevent scrolling */
+  height: 100%;          /* lock to viewport height */
+  overflow-x: hidden;
+  overflow-y: hidden;
   background-color: #f9cdd2;
   font-family: Arial, sans-serif;
 }
