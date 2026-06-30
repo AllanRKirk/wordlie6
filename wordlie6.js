@@ -1,333 +1,328 @@
-/* wordlie6.js — final patched version with reliable New Game reset */
-/* allan */
+/* ---------- GLOBAL LAYOUT ---------- */
 
-document.addEventListener("DOMContentLoaded", () => {
-
-// -------------------- Element references --------------------
-const GAME_VERSION = "v1";
-const board = document.getElementById("board");
-const keyboard = document.getElementById("keyboard");
-const message = document.getElementById("message");
-const cheer = document.getElementById("cheer-sound");
-const statsBox = document.getElementById("stats");
-
-const deleteBtn = document.getElementById("delete");
-const enterBtn = document.getElementById("enter");
-const newGameBtn = document.getElementById("new-game");
-const showHintBtn = document.getElementById("show-hint");
-const revealBtn = document.getElementById("reveal");
-const helpModal = document.getElementById("help-modal");
-const instructionsBtn = document.getElementById("instructions");
-const closeHelpBtn = document.getElementById("close-help");
-
-// -------------------- Game state --------------------
-let correctWord;
-if (Array.isArray(WORDS) && WORDS.length > 0) {
-  correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-} else {
-  // Fallback so the game still runs even if dictionary.js fails
-  correctWord = "PUZZLE";
-  console.warn("WORDS not available; using fallback word:", correctWord);
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100vh;          /* lock to viewport height */
+  overflow: hidden;       /* prevent scrolling */
+  background-color: #f9cdd2;
+  font-family: Arial, sans-serif;
 }
 
-let currentRow = 0;
-let currentCol = 0;
-const rows = 6;
-const cols = 6;
-const grid = [];
-let hintUsed = false;
-let gameOver = false;
-
-// -------------------- Stats --------------------
-let timesCorrect = 0;
-let gamesPlayed = 0;
-let currentStreak = 0;
-let bestStreak = 0;
-
-// -------------------- Load stats --------------------
-function loadStats() {
-  try {
-    const saved = JSON.parse(localStorage.getItem("wordlie6stats"));
-    if (saved) {
-      timesCorrect = saved.timesCorrect || 0;
-      gamesPlayed = saved.gamesPlayed || 0;
-      currentStreak = saved.currentStreak || 0;
-      bestStreak = saved.bestStreak || 0;
-    }
-  } catch (e) {}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  background-image: url("assets/images/wordlie6-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding-bottom: 100px;  /* space for footer + message */
+  box-sizing: border-box;
 }
 
-// -------------------- Save stats --------------------
-function saveStats() {
-  const data = { timesCorrect, gamesPlayed, currentStreak, bestStreak };
-  localStorage.setItem("wordlie6stats", JSON.stringify(data));
+/* ---------- SPLASH SCREEN ---------- */
+
+#splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: #f9cdd2;
+  background-image: url("assets/images/wordlie6-bg.png");
+  background-size: cover;
+  background-position: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  z-index: 1000;
+  transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
 }
 
-// -------------------- Update stats display --------------------
-function updateStats() {
-  const winPercent =
-    gamesPlayed > 0 ? Math.round((timesCorrect / gamesPlayed) * 100) : 0;
-  statsBox.textContent =
-    `Times Correct: ${timesCorrect} | Games Played: ${gamesPlayed} | Win %: ${winPercent}% | Streak: ${currentStreak} | Best: ${bestStreak}`;
+#splash-screen.hidden {
+  opacity: 0;
+  visibility: hidden;
 }
 
-loadStats();
-updateStats();
+#splash-content h1 {
+  font-size: 2.3em;
+  color: black;
+  margin: 0;
+  text-shadow: 1px 1px 4px rgba(255, 255, 255, 0.5);
+}
 
-// -------------------- Build the board --------------------
-for (let r = 0; r < rows; r++) {
-  const row = document.createElement("div");
-  row.classList.add("row");
-  const rowTiles = [];
-  for (let c = 0; c < cols; c++) {
-    const tile = document.createElement("div");
-    tile.classList.add("tile");
-    row.appendChild(tile);
-    rowTiles.push(tile);
+#splash-content p {
+  color: black;
+  font-size: 1.1em;
+  margin-top: 10px;
+}
+
+/* ---------- MAIN TITLE ---------- */
+
+h1 {
+  text-align: center;
+  margin: 12px 0 6px;
+  font-size: 2em;
+}
+
+/* ---------- GAME GRID ---------- */
+
+#board {
+  margin-top: 6px;
+  width: 270px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+}
+
+.tile {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #333;
+  margin: 2px;
+  background: black;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  text-transform: uppercase;
+  transition: background-color 0.15s;
+  border-radius: 6px;
+}
+
+/* ---------- KEYBOARD ---------- */
+
+#keyboard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 2px auto;
+  width: 100%;
+  max-width: 500px;
+}
+
+.key-row {
+  display: flex;
+  justify-content: center;
+  gap: 0px;
+  margin: 0;
+}
+
+.key {
+  background: black;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 40px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.88em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s;
+}
+
+.key:active {
+  background: #888;
+}
+
+/* ---------- STATS ---------- */
+
+#stats {
+  margin-top: 2px;
+  text-align: center;
+  font-size: 18px;
+  color: black;
+}
+
+/* ---------- BUTTONS ---------- */
+
+button {
+  background-color: #333;
+  color: white;
+  font-size: 1em;
+  margin: 4px;
+  padding: 10px 14px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+#controls,
+#extras {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+/* ---------- MESSAGE ---------- */
+
+#message {
+  text-align: center;
+  font-size: 1.2em;
+  margin-top: 6px;
+  min-height: 1.4em;
+  padding: 0;
+}
+
+/* ---------- CELEBRATION ---------- */
+
+.star {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  background: gold;
+  clip-path: polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+  opacity: 0;
+  animation: fadeStars 2.5s ease-in-out forwards;
+}
+
+@keyframes fadeStars {
+  0% {opacity: 0; transform: scale(0.5) translateY(50px);}
+  50% {opacity: 1; transform: scale(1) translateY(-50px);}
+  100% {opacity: 0; transform: scale(0.5) translateY(-120px);}
+}
+
+/* ---------- FLASH ---------- */
+
+.flash-tile {
+  animation: flashOpacity 0.5s linear infinite;
+}
+
+@keyframes flashOpacity {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.2; }
+}
+
+/* ---------- HOW TO PLAY MODAL ---------- */
+
+#help-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  transition: opacity 0.3s ease;
+}
+
+#help-modal.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.help-content {
+  background-color: #fff9fc;
+  color: #222;
+  max-width: 90%;
+  width: 340px;
+  max-height: 85vh;
+  overflow-y: auto;
+  border-radius: 8px;
+  padding: 20px 25px;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+  position: relative;
+  font-size: 0.95em;
+}
+
+#close-help {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 1.6em;
+  font-weight: bold;
+  color: #333;
+  cursor: pointer;
+}
+
+/* ---------- CONGRATS OVERLAY ---------- */
+
+#congrats-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3000;
+  transition: opacity 0.4s ease;
+}
+
+#congrats-overlay.hidden {
+  visibility: hidden;
+  opacity: 0;
+}
+
+.congrats-box {
+  background: white;
+  padding: 30px 40px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.4);
+  text-align: center;
+  animation: popIn 0.5s ease-out;
+}
+
+@keyframes popIn {
+  0% { transform: scale(0.6); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* ---------- FOOTER (LICENCE) ---------- */
+
+#license {
+  position: fixed;
+  bottom: 10px;   /* sits below message */
+  left: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 10px;
+  color: black;
+  opacity: 0.8;
+  pointer-events: none;
+}
+
+/* ---------- RESPONSIVE SHRINK FOR SHORT SCREENS ---------- */
+
+@media (max-height: 780px) {
+  #board {
+    transform: scale(0.90);
+    transform-origin: top center;
   }
-  board.appendChild(row);
-  grid.push(rowTiles);
-}
 
-// -------------------- Build the keyboard --------------------
-const layout = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
-layout.forEach(line => {
-  const rowDiv = document.createElement("div");
-  rowDiv.classList.add("key-row");
-  line.split("").forEach(ch => {
-    const key = document.createElement("button");
-    key.textContent = ch;
-    key.classList.add("key");
-    key.addEventListener("click", () => pressKey(ch));
-    rowDiv.appendChild(key);
-  });
-  keyboard.appendChild(rowDiv);
-});
-
-const keyButtons = Array.from(document.querySelectorAll(".key"));
-
-// -------------------- Keyboard input --------------------
-function pressKey(key) {
-  if (gameOver) return;
-  if (currentRow >= rows) return;
-  if (currentCol < cols) {
-    grid[currentRow][currentCol].textContent = key;
-    currentCol++;
-  }
-}
-
-deleteBtn.addEventListener("click", () => {
-  if (gameOver) return;
-  if (currentCol > 0) {
-    currentCol--;
-    grid[currentRow][currentCol].textContent = "";
-    message.textContent = "";
-  }
-});
-
-enterBtn.addEventListener("click", handleGuess);
-
-// -------------------- How to Play Modal --------------------
-instructionsBtn.addEventListener("click", () => helpModal.classList.remove("hidden"));
-closeHelpBtn.addEventListener("click", () => helpModal.classList.add("hidden"));
-window.addEventListener("click", e => { if (e.target === helpModal) helpModal.classList.add("hidden"); });
-
-// -------------------- Process guess --------------------
-function handleGuess() {
-  if (gameOver) return;
-  if (currentRow >= rows) return;
-  if (currentCol < cols) return;
-
-  const guess = grid[currentRow].map(t => t.textContent).join("");
-  if (!Array.isArray(WORDS) || !WORDS.includes(guess)) {
-    message.textContent = "Not in word list!";
-    return;
+  #keyboard {
+    transform: scale(0.92);
+    transform-origin: top center;
+    margin-top: -4px;
   }
 
-  const letterCounts = {};
-  for (const ch of correctWord) letterCounts[ch] = (letterCounts[ch] || 0) + 1;
-  const result = Array(cols).fill("absent");
-
-  // Greens
-  for (let i = 0; i < cols; i++) {
-    if (guess[i] === correctWord[i]) {
-      result[i] = "correct";
-      letterCounts[guess[i]]--;
-    }
+  #controls, #extras {
+    margin-top: 0;
   }
 
-  // Yellows
-  for (let i = 0; i < cols; i++) {
-    if (result[i] === "correct") continue;
-    const letter = guess[i];
-    if (letterCounts[letter] > 0) {
-      result[i] = "present";
-      letterCounts[letter]--;
-    }
-  }
-
-  // Apply colours
-  for (let i = 0; i < cols; i++) {
-    const tile = grid[currentRow][i];
-    const letter = guess[i];
-    let color = "#666";
-    if (result[i] === "correct") color = "green";
-    else if (result[i] === "present") color = "gold";
-    tile.style.backgroundColor = color;
-    colorKey(letter, color);
-  }
-
-  if (guess === correctWord) {
-    handleWin();
-    return;
-  }
-
-  currentRow++;
-  currentCol = 0;
-  if (currentRow >= rows) handleLoss();
-}
-
-// -------------------- Win / Loss handling --------------------
-function handleWin() {
-  timesCorrect++;
-  gamesPlayed++;
-  currentStreak++;
-  if (currentStreak > bestStreak) bestStreak = currentStreak;
-  saveStats();
-  updateStats();
-
-  flashWinningRow(currentRow);
-  showCelebration();
-  showCongratsOverlay();
-  message.textContent = "Select New Game to continue";
-
-  document.querySelectorAll("button").forEach(btn => {
-    if (btn.id !== "new-game") btn.disabled = true;
-  });
-
-  // Allow New Game to respond
-  gameOver = false;
-}
-
-function handleLoss() {
-  gamesPlayed++;
-  currentStreak = 0;
-  message.textContent = `Game Over! Word was ${correctWord}`;
-  saveStats();
-  updateStats();
-
-  document.querySelectorAll("button").forEach(btn => {
-    if (btn.id !== "new-game") btn.disabled = true;
-  });
-
-  currentRow = 0;
-  currentCol = 0;
-  gameOver = false;
-}
-
-// -------------------- Version Display --------------------
-document.getElementById("version-display").textContent = "Version: " + GAME_VERSION;
-
-// -------------------- Flash winning row --------------------
-function flashWinningRow(rowIndex) {
-  const tiles = grid[rowIndex];
-  tiles.forEach(tile => tile.classList.add("flash-tile"));
-}
-
-// -------------------- Big congratulations overlay --------------------
-function showCongratsOverlay() {
-  const overlay = document.getElementById("congrats-overlay");
-  overlay.classList.remove("hidden");
-  setTimeout(() => overlay.classList.add("hidden"), 2500);
-}
-
-// -------------------- Keyboard colouring --------------------
-function colorKey(letter, color) {
-  keyButtons.forEach(key => {
-    if (key.textContent === letter) {
-      const current = key.style.backgroundColor;
-      if (
-        color === "green" ||
-        (color === "gold" && current !== "green") ||
-        (color === "#666" && current !== "green" && current !== "gold")
-      ) key.style.backgroundColor = color;
-    }
-  });
-}
-
-// -------------------- Buttons --------------------
-newGameBtn.addEventListener("click", resetGame);
-showHintBtn.addEventListener("click", showHint);
-revealBtn.addEventListener("click", revealWord);
-
-// -------------------- Hint logic --------------------
-function showHint() {
-  if (gameOver) return;
-  if (hintUsed) { message.textContent = "Hint already used!"; return; }
-  hintUsed = true;
-  const index = Math.floor(Math.random() * correctWord.length);
-  const letter = correctWord[index];
-  message.textContent = `Hint: Letter ${index + 1} is '${letter}'`;
-}
-
-// -------------------- Reveal word --------------------
-function revealWord() {
-  if (gameOver) return;
-  message.textContent = `The word is ${correctWord}`;
-  document.querySelectorAll("button").forEach(btn => {
-    if (btn.id !== "new-game") btn.disabled = true;
-  });
-  gameOver = false;
-}
-
-// -------------------- Reset game --------------------
-function resetGame() {
-  gameOver = false;
-
-  document.querySelectorAll("button").forEach(btn => {
-    btn.disabled = false;
-  });
-
-  board.querySelectorAll(".tile").forEach(tile => {
-    tile.textContent = "";
-    tile.style.backgroundColor = "black";
-    tile.classList.remove("flash-tile");
-  });
-
-  keyButtons.forEach(k => {
-    k.style.backgroundColor = "black";
-  });
-
-  message.textContent = "";
-  currentRow = 0;
-  currentCol = 0;
-  hintUsed = false;
-
-  if (Array.isArray(WORDS) && WORDS.length > 0) {
-    correctWord = WORDS[Math.floor(Math.random() * WORDS.length)];
-  } else {
-    correctWord = "PUZZLE";
-    console.warn("WORDS not available on reset; using fallback word:", correctWord);
-  }
-
-  updateStats();
-}
-
-// -------------------- Celebration animation --------------------
-function showCelebration() {
-  cheer.currentTime = 0;
-  cheer.play();
-
-  for (let i = 0; i < 50; i++) {
-    const star = document.createElement("div");
-    star.classList.add("star");
-    star.style.left = Math.random() * window.innerWidth + "px";
-    star.style.bottom = "0px";
-    star.style.animationDuration = (1.5 + Math.random() * 1.5) + "s";
-    star.style.animationDelay = Math.random() * 0.3 + "s";
-    document.body.appendChild(star);
-    star.addEventListener("animationend", () => star.remove());
+  #message {
+    margin-top: 4px;
   }
 }
-
-}); // END DOMContentLoaded
