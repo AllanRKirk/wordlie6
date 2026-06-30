@@ -1,28 +1,25 @@
 /* ---------- GLOBAL LAYOUT ---------- */
 
 html, body {
-  height: 100%;
   margin: 0;
-  margin-top: 2px;
   padding: 0;
-  overflow-x: hidden;
+  height: 100vh;          /* lock to viewport height */
+  overflow: hidden;       /* prevent scrolling */
   background-color: #f9cdd2;
   font-family: Arial, sans-serif;
 }
 
 body {
-  padding-bottom: 80px; /* ensures footer always has space */
-  background: url("assets/images/wordlie6-bg.png") center/cover no-repeat fixed;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  color: black;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: 100vh;
+  background-image: url("assets/images/wordlie6-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  padding-bottom: 100px;  /* space for footer + message */
+  box-sizing: border-box;
 }
 
 /* ---------- SPLASH SCREEN ---------- */
@@ -64,24 +61,21 @@ body {
 }
 
 /* ---------- MAIN TITLE ---------- */
+
 h1 {
   text-align: center;
-  margin: 14px 0 6px;
+  margin: 12px 0 6px;
   font-size: 2em;
-  margin-bottom: 10px;
 }
 
 /* ---------- GAME GRID ---------- */
+
 #board {
-  margin-top: 10px;
-  margin-bottom: 20px;
+  margin-top: 6px;
   width: 270px;
-  margin-left: auto;
-  margin-right: auto;
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex-shrink: 0;
 }
 
 .row {
@@ -101,11 +95,12 @@ h1 {
   justify-content: center;
   font-size: 1.5em;
   text-transform: uppercase;
-  transition: background-color 0.3s;
+  transition: background-color 0.15s;
   border-radius: 6px;
 }
 
 /* ---------- KEYBOARD ---------- */
+
 #keyboard {
   display: flex;
   flex-direction: column;
@@ -113,24 +108,20 @@ h1 {
   margin: 2px auto;
   width: 100%;
   max-width: 500px;
-  flex-shrink: 0;
 }
 
-/* ⭐ Tighter rows */
 .key-row {
   display: flex;
   justify-content: center;
-  flex-wrap: nowrap;
   gap: 0px;
-  margin: 0px 0;
+  margin: 0;
 }
 
-/* ⭐ Tighter keys */
 .key {
   background: black;
   color: white;
   border: none;
-  width: 30px;     /* reduced from 31px */
+  width: 30px;
   height: 40px;
   border-radius: 4px;
   cursor: pointer;
@@ -138,31 +129,29 @@ h1 {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s;
+  transition: background-color 0.15s;
 }
 
 .key:active {
   background: #888;
 }
 
-.key[style*="gold"] {
-  background-color: #b59f3b !important;
-}
+/* ---------- STATS ---------- */
 
-/* ---------- STATS + CONTROLS ---------- */
 #stats {
   margin-top: 2px;
   text-align: center;
   font-size: 18px;
   color: black;
-  flex-shrink: 0;
 }
+
+/* ---------- BUTTONS ---------- */
 
 button {
   background-color: #333;
   color: white;
   font-size: 1em;
-  margin: 5px;
+  margin: 4px;
   padding: 10px 14px;
   border: none;
   border-radius: 5px;
@@ -180,17 +169,20 @@ button:hover {
   gap: 6px;
   flex-wrap: wrap;
   margin-top: 2px;
-  flex-shrink: 0;
 }
+
+/* ---------- MESSAGE ---------- */
 
 #message {
   text-align: center;
   font-size: 1.2em;
-  margin: 6px 0 4px;
-  min-height: 1.6em;
+  margin-top: 6px;
+  min-height: 1.4em;
+  padding: 0;
 }
 
 /* ---------- CELEBRATION ---------- */
+
 .star {
   position: absolute;
   width: 18px;
@@ -206,7 +198,9 @@ button:hover {
   50% {opacity: 1; transform: scale(1) translateY(-50px);}
   100% {opacity: 0; transform: scale(0.5) translateY(-120px);}
 }
-/* ---------- WINNING WORD FLASH ---------- */
+
+/* ---------- FLASH ---------- */
+
 .flash-tile {
   animation: flashOpacity 0.5s linear infinite;
 }
@@ -216,55 +210,8 @@ button:hover {
   51%, 100% { opacity: 0.2; }
 }
 
-
-@media (max-height: 650px), (max-width: 480px) {
-  body {
-    justify-content: flex-start;
-    padding-bottom: 10px;
-  }  
- h1 {
-    font-size: 1.6em;
-    margin-bottom: 8px;
-  }
-  #board {
-    transform: scale(0.9);
-    margin-bottom: 4px;
-    margin-top: 10px;
-  }
-  .tile {
-    width: 36px;
-    height: 36px;
-    font-size: 1.2em;
-  }
-  .key {
-    width: 28px; /* tighter */
-    height: 38px;
-    font-size: 0.85em;
-  }
-  #keyboard {
-    max-width: 430px;
-  }
-  #stats {
-    font-size: 0.9em;
-  }
-  button {
-    padding: 8px 10px;
-  }
-}
-
-@media (min-width: 481px) and (max-width: 768px) {
-  #board {
-    transform: scale(1);
-    margin-bottom: 5px;
-  }
-  
-  .tile { width: 42px; height: 42px; font-size: 1.4em; }
-  #keyboard { max-width: 480px; }
-  .key { width: 31px; height: 42px; }
-  h1 { font-size: 1.8em; }
-}  
-
 /* ---------- HOW TO PLAY MODAL ---------- */
+
 #help-modal {
   position: fixed;
   top: 0;
@@ -308,50 +255,8 @@ button:hover {
   cursor: pointer;
 }
 
-.help-content h2 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 10px;
-}
+/* ---------- CONGRATS OVERLAY ---------- */
 
-.help-content ul {
-  padding-left: 20px;
-  margin-top: 8px;
-}
-
-.help-content li {
-  margin: 4px 0;
-}
-
-.legend {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  margin-right: 6px;
-  border-radius: 3px;
-  vertical-align: middle;
-}
-
-.legend.green { background-color: green; }
-.legend.gold  { background-color: gold; }
-.legend.gray  { background-color: #666; }
-
-.note {
-  text-align: center;
-  margin-top: 12px;
-  font-style: italic;
-  font-size: 0.9em;
-}
-
-@media (max-width: 480px) {
-  .help-content {
-    width: 88%;
-    padding: 16px 18px;
-    font-size: 0.9em;
-  }
-}
-
-/* ---------- BIG CONGRATULATIONS OVERLAY ---------- */
 #congrats-overlay {
   position: fixed;
   top: 0;
@@ -380,22 +285,16 @@ button:hover {
   animation: popIn 0.5s ease-out;
 }
 
-.congrats-box h1 {
-  font-size: 2.2em;
-  color: black;
-  margin: 0;
-}
-
 @keyframes popIn {
   0% { transform: scale(0.6); opacity: 0; }
   100% { transform: scale(1); opacity: 1; }
 }
 
+/* ---------- FOOTER (LICENCE) ---------- */
 
-/* ---------- FIXED LICENSE FOOTER ---------- */
 #license {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 12px);
+  bottom: 10px;   /* sits below message */
   left: 0;
   width: 100%;
   text-align: center;
@@ -403,4 +302,27 @@ button:hover {
   color: black;
   opacity: 0.8;
   pointer-events: none;
+}
+
+/* ---------- RESPONSIVE SHRINK FOR SHORT SCREENS ---------- */
+
+@media (max-height: 780px) {
+  #board {
+    transform: scale(0.90);
+    transform-origin: top center;
+  }
+
+  #keyboard {
+    transform: scale(0.92);
+    transform-origin: top center;
+    margin-top: -4px;
+  }
+
+  #controls, #extras {
+    margin-top: 0;
+  }
+
+  #message {
+    margin-top: 4px;
+  }
 }
